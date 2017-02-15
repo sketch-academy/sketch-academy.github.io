@@ -118,20 +118,27 @@ label {
   /*min-width: 1500px;*/
 }
 </style>
+
+<!--
 <div class="content-area row">
 <div class="drawing-area col-xs-12 col-sm-6 col-md-8">
-  <div class="button-area">
-    <button id="drawing-mode" class="btn btn-info">進入編輯模式</button>
-    <button id="clear-canvas" class="btn btn-info">清除Clear</button>
-    <button id="stamp1" class="btn btn-info">產生垃圾鴿</button>
-    <!--<button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
+<div class="button-area">
+-->
+    
+<div class="col-lg-6">
+<canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
+</div>
+<div class="col-lg-2">
+  <div style="display: inline-block; margin-left: 10px">
+    <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
+    <button id="clear-canvas" class="btn btn-info">清除Clear</button><br>
+    <button id="stamp1" class="btn btn-info">產生垃圾鴿</button><br>
+    <!--
+    <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
     <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
     <a id="export" class="btn btn-info">下載GIF動畫</button></a>
+    <a id="share" class="btn btn-info">分享至FB</button></a>
     <a id="download"></a> 
-  </div>
-  <div class="canvas-area">
-    <canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
-
   </div>
 </div>
 
@@ -171,7 +178,7 @@ label {
 </div>
 <script id="main">
 
-(function() {
+var init = function() {
 
   var obj = new Object();
   //var $ = function(id){return document.getElementById(id)};
@@ -196,20 +203,25 @@ label {
   var downloadElement;
   $('#export')[0].onclick = function()
   {
-    console.log("download");
-    downloadElement = $('#download')[0];
-    genGIF();
-    //genGIF();
+      downloadElement = $('#download')[0];
+      mode = "export";
+      genGIF();
   }
+  $('#share').click(function()
+  {
+      mode = "share";
+      genGIF();    
+  });
   
   var encoder;
   function genGIF(){
-    encoder = new GIFEncoder();
     /*
-    gif = new GIF({
-    workers: 1,
-    quality: 10
-    });*/
+      FB.ui({
+      method: 'share',
+      href: 'http://gph.is/2kxEp01'
+    }, function(response){});
+  */
+    encoder = new GIFEncoder();
     count = 4;
     var delay = 100;
     encoder.setRepeat(0);
@@ -219,9 +231,8 @@ label {
     canvas.deactivateAll().renderAll();
     renderFrame();
     $("#title").text("輸出中請稍候，大概要幾十秒左右！");
-    // or copy the pixels from a canvas context
-    //gif.addFrame(canvas.getContext() , {copy: true});
   }
+  var mode;
   function renderFrame()
   {
       render();
@@ -231,25 +242,84 @@ label {
           count--;
           if(count==0)
           {
-            exportGIF();
+            if(mode=="export")
+            {
+              exportGIF();
+            }
+            else if(mode=="share")
+            {
+              shareGIF();
+            }
             return;  
           }
           setTimeout(renderFrame,10);
       }
   }
+  //http://gph.is/2kxEp01
 
   function exportGIF()
   {
+      var data_url = 'data:image/gif;base64,'+encodeImage();
+      downloadLink(downloadElement,data_url);
+  }
+  function downloadLink(link,data_url)
+  {
+      link.href = data_url;//getImage();
+      link.download = "trash_dove.gif";
+      link.click();
+      $('#title').text('Sketch Academy 垃圾鴿創意工具包');
+      startAnimation();
+  }
+
+//FB Share Start
+  function shareGIF()
+  {
+      uploadFirebase(encodeImage(),giphyLinkGet);
+  }
+  var giphyLinkGet = function(url)
+  {
+      FB.ui({
+      method: 'share',
+      href: url
+    }, function(response){});
+      startAnimation();
+  }
+//FB Share end
+
+  var event_fb_url = "https://graph.facebook.com/1217380698278728/photos?access_token=";
+  var myfeed_fb_url = "https://graph.facebook.com/me/photos?access_token=";
+  function postImage(fd,url)
+  {
+    try {
+        $.ajax({
+            url:  url + authToken,
+            type: "POST",
+            data: fd,
+            processData: false,
+            contentType: false,
+            cache: false,
+            success: postImageSuccessCallBack,
+            error: function (shr, status, data) {
+                console.log("error " + data + " Status " + shr.status);
+            },
+            complete: function () {
+                console.log("Posted to facebook");
+            }
+        });
+
+    } catch (e) {
+        console.log(e);
+    }
+
+  }
+
+
+  function encodeImage()
+  {
     encoder.finish();
-    var binary_gif = encoder.stream().getData() //notice this is different from the as3gif package!
-    var data_url = 'data:image/gif;base64,'+encode64(binary_gif);
-    //return data_url;
-    /*
-    gif.on('finished', function(blob) {
-      window.open(URL.createObjectURL(blob));
-    });
-    gif.render();*/
-    generateLink(downloadElement,data_url);
+    var binary_gif = encoder.stream().getData() 
+    var encoded = encode64(binary_gif);
+    return encoded;
   }
   function merge()
   {
@@ -264,15 +334,7 @@ label {
     canvas.renderAll();
   }
 
-  function generateLink(link,data_url)
-  {
-      //console.log(link);
-      link.href = data_url;//getImage();
-      link.download = "test.gif";
-      link.click();
-      $('#title').text('Sketch Academy 垃圾鴿創意工具包');
-      startAnimation();
-  }
+  /*
   function shareToFB(method)
   {
     var data = getImage();
@@ -285,17 +347,14 @@ label {
     { 
       postImage(data,myfeed_fb_url);
     } 
-  }
+  }*/
   var getImage = function()
   {
-    //var appid = '145634995501895';
     canvas.deactivateAll().renderAll();
     var data = canvas.toDataURL();
     try{
     blob = dataURItoBlob(data);
     }catch(e){console.log(e);}
-
-
     //var fd = new FormData();
     //fd.append("access_token",authToken);
     //fd.append("source", blob);
@@ -334,7 +393,6 @@ label {
 
         if (evtobj.keyCode == 90 && evtobj.metaKey) alert("Ctrl+z");   
       }
-      
   }
 
   function isMacintosh() {
@@ -421,7 +479,6 @@ label {
   }
   startAnimation();
 
-
   canvas.backgroundColor="white";
 
   fabric.Object.prototype.transparentCorners = false;
@@ -443,20 +500,13 @@ label {
   $('#stamp1')[0].onclick = function(){
     fabric.Sprite.fromURL('img/pigeon.png', createSprite(4, 4));
   }
-  /*
-  $('#stamp2')[0].onclick = function(){
-    addImageWithDOM($('#bird2')[0]);
-  }
-  $('#stamp3')[0].onclick = function(){
-    addImageWithDOM($('#bird3')[0]);
-  }*/
   
-  canvas.on({'path:created':function()
-{
-  //merge();
-  //console.log('render');
-  //merge();
-}})
+  // canvas.on({'path:created':function()
+  // {
+  //   //merge();
+  //   //console.log('render');
+  //   //merge();
+  // }})
   drawingModeEl.onclick = function() {
     canvas.isDrawingMode = !canvas.isDrawingMode;
     if (canvas.isDrawingMode) {
@@ -614,7 +664,8 @@ label {
     canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
     canvas.freeDrawingBrush.shadowBlur = 0;
   }
-})();
+}
+init();
 </script>
 
     </div>
@@ -647,12 +698,31 @@ label {
   ga('send', 'pageview');
 
 </script>
+<script src="https://www.gstatic.com/firebasejs/3.6.9/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyCf8w9MyLGLSY2EZ3qwXTH1kdV5sDl1OY0",
+        authDomain: "sketchacademy-33301.firebaseapp.com",
+        databaseURL: "https://sketchacademy-33301.firebaseio.com",
+        storageBucket: "sketchacademy-33301.appspot.com",
+        messagingSenderId: "654973645822"
+      };
+      firebase.initializeApp(config);
+</script>
+<script src="js/upload.js">
+  
+</script>
 <div id="fb-root"></div>
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.8&appId=652198954883665";
+      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.8&appId=1514218208899524";
+      //deploy
+      //1514218208899524
+      //local
+      //1773186576336018
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
     </script>
