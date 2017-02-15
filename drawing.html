@@ -222,8 +222,8 @@ label {
   }
   function renderFrame()
   {
-      encoder.addFrame(canvas.getContext());
       render();
+      encoder.addFrame(canvas.getContext());
       if(count>0)
       {
           count--;
@@ -436,7 +436,7 @@ label {
     canvas.backgroundColor="white";
   };
   $('#stamp1')[0].onclick = function(){
-    fabric.Sprite.fromURL('img/pigeon.png', createSprite(2, 3));
+    fabric.Sprite.fromURL('img/pigeon.png', createSprite(4, 4));
   }
   /*
   $('#stamp2')[0].onclick = function(){
