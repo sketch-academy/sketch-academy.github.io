@@ -129,7 +129,7 @@ label {
   <!--
   <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
   <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
-  <a id="export" class="btn btn-info">下載作品</button></a>
+  <a id="export" class="btn btn-info">下載動畫</button></a>
   <a id="download"></a> 
   <button id="nextFrame">NextFrame</button>
   <div id="drawing-mode-options">
@@ -213,10 +213,9 @@ label {
     encoder.setDelay(100);
     encoder.start();
     playingAnim = false;
-    
-    count = 8;
+    canvas.deactivateAll().renderAll();
     renderFrame();
-    $("#title").text("輸出中請稍候！");
+    $("#title").text("輸出中請稍候，大概要一到兩分鐘！");
     $("#info").text("輸出中請稍候！");
     // or copy the pixels from a canvas context
     //gif.addFrame(canvas.getContext() , {copy: true});
