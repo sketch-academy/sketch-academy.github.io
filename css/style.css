@@ -341,7 +341,7 @@ header a {
 
 .slotBetween{
     height: 100px;
-    padding: 0 8px;
+    padding: 0 5px;
     overflow: hidden;
     display: inline-block;
     text-align: center;
@@ -382,7 +382,7 @@ header a {
 }
 
 .drawbtn{
-    background-color:  rgb(181,44,51);
+    background-color:  rgb(196,67,67);
     border: none;
     border-bottom: 5px rgb(142, 35, 40) solid;
     font-size: 48px;
