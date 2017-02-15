@@ -118,10 +118,10 @@ label {
   min-width: 1500px;
 }
 </style>
-<div class="col-lg-8">
+<div class="col-lg-6">
 <canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
 </div>
-<div class="col-lg-4">
+<div class="col-lg-2">
 <div style="display: inline-block; margin-left: 10px">
   <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
   <button id="clear-canvas" class="btn btn-info">Clear</button><br>
@@ -132,6 +132,9 @@ label {
   <a id="export" class="btn btn-info">下載動畫</button></a>
   <a id="download"></a> 
   <button id="nextFrame">NextFrame</button>
+  </div>
+  </div>
+  <div class="col-lg-4">
   <div id="drawing-mode-options">
     <label for="drawing-mode-selector">Mode:</label>
     <select id="drawing-mode-selector">
@@ -160,8 +163,8 @@ label {
     <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
     <div>supported by fabric.js</div>
     <p id="info" style="font-size: 24px;">INFO</p>
+    <div align="center" class="fb-page" data-href="https://www.facebook.com/SketchAcademy/" data-tabs="timeline" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/SketchAcademy/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/SketchAcademy/">SketchAcademy</a></blockquote></div>
   </div>
-</div>
 </div>
 <script id="main">
 
@@ -645,6 +648,17 @@ label {
   ga('send', 'pageview');
 
 </script>
+<div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.8&appId=652198954883665";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
 
+              <!-- Comment #4: Plugin Code -->
+              <div class="fb-quote"></div>
   </body>
 </html>
