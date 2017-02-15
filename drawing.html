@@ -59,7 +59,7 @@
                         <a href="#page-top"></a>
                     </li>
                     <li class="page-scroll">
-                        <a href="/">結束繪畫</a>
+                        <a href="/">看看SketchAcademy在搞什麼XD</a>
                     </li>
                 </ul>
             </div>
@@ -124,14 +124,13 @@ label {
 <div class="col-lg-2">
 <div style="display: inline-block; margin-left: 10px">
   <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
-  <button id="clear-canvas" class="btn btn-info">Clear</button><br>
-  <button id="stamp1" class="btn btn-info">產生垃圾鴿1</button><br>
+  <button id="clear-canvas" class="btn btn-info">清除Clear</button><br>
+  <button id="stamp1" class="btn btn-info">產生垃圾鴿</button><br>
   <!--
   <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
   <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
-  <a id="export" class="btn btn-info">下載動畫</button></a>
+  <a id="export" class="btn btn-info">下載GIF動畫</button></a>
   <a id="download"></a> 
-  <button id="nextFrame">NextFrame</button>
   </div>
   </div>
   <div class="col-lg-4">
@@ -162,7 +161,7 @@ label {
     <label for="drawing-shadow-offset">Shadow offset:</label>
     <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
     <div>supported by fabric.js</div>
-    <p id="info" style="font-size: 24px;">INFO</p>
+    <p id="info" style="font-size: 24px;">來幫開發團隊來按個讚</p>
     <div align="center" class="fb-page" data-href="https://www.facebook.com/SketchAcademy/" data-tabs="timeline" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/SketchAcademy/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/SketchAcademy/">SketchAcademy</a></blockquote></div>
   </div>
 </div>
@@ -198,10 +197,7 @@ label {
     genGIF();
     //genGIF();
   }
-  $('#nextFrame')[0].onclick = function()
-  {
-    canvas.renderAll();
-  }
+  
   var encoder;
   function genGIF(){
     encoder = new GIFEncoder();
@@ -219,7 +215,6 @@ label {
     canvas.deactivateAll().renderAll();
     renderFrame();
     $("#title").text("輸出中請稍候，大概要幾十秒左右！");
-    $("#info").text("輸出中請稍候！");
     // or copy the pixels from a canvas context
     //gif.addFrame(canvas.getContext() , {copy: true});
   }
