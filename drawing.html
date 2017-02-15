@@ -215,7 +215,7 @@ label {
     playingAnim = false;
     canvas.deactivateAll().renderAll();
     renderFrame();
-    $("#title").text("輸出中請稍候，大概要一到兩分鐘！");
+    $("#title").text("輸出中請稍候，大概要幾十秒左右！");
     $("#info").text("輸出中請稍候！");
     // or copy the pixels from a canvas context
     //gif.addFrame(canvas.getContext() , {copy: true});
@@ -269,6 +269,7 @@ label {
       link.download = "test.gif";
       link.click();
       $('#title').text('Sketch Academy 垃圾鴿創意工具包');
+      startAnimation();
   }
   function shareToFB(method)
   {
@@ -417,6 +418,7 @@ label {
       fabric.util.requestAnimFrame(animate);
     }
   }
+  startAnimation();
 
 
   canvas.backgroundColor="white";
