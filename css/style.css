@@ -382,8 +382,9 @@ header a {
 }
 
 .drawbtn{
-    background-color:  rgb(234,23,53);
-    border: 0px;
+    background-color:  rgb(181,44,51);
+    border: none;
+    border-bottom: 5px rgb(142, 35, 40) solid;
     font-size: 48px;
 }
 
@@ -422,7 +423,22 @@ footer{
 	background: transparent !important;
 }
 
+.brand{
+    overflow: hidden;
+}
 
+.logo{
+    float: left;
+    width: 21px;
+    height: 21px;
+    margin-right: 7px;
+}
+
+/*.logo{
+    float: left;
+    display:inline-block;
+    padding: 0 2px;
+}*/
 
 /*
 .slot1 {
