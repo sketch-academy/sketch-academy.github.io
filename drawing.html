@@ -137,7 +137,8 @@ label {
 <div class="content-area row">
 <div class="drawing-area col-xs-12 col-sm-6 col-md-8">
   <div class="button-area">
-
+  <p>說明：作品完成後，點選「產生GIPHY連結」，請稍有耐心，等待文字框中跳出連結文字，點選複製，直接將這段連結貼在FB塗鴉牆或留言上就會產生動畫貼圖</p>
+  <p>只要在FB貼完後有出現圖的樣子即可(可能還不一定會動)，有時候Facebook需要一些時間處理檔案，過一小段時間後重整即可</p> 
     <!--<div style="display: inline-block; margin-left: 10px">-->
     <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
     <button id="clear-canvas" class="btn btn-info">清除Clear</button><br>
@@ -148,7 +149,7 @@ label {
     <a id="export" class="btn btn-info">下載GIF動畫</button></a>
     <a id="getlink-btn" class="btn btn-info">產生GIPHY連結</button></a>
     <!--<a id="share" class="btn btn-info">分享至FB</button></a>-->
-    <input type="text" id="giphylink" value="尚未產生 Not Ready">
+    <input type="text" id="giphylink" value="">
     <button id="copy-btn" class="btn btn-info">複製</button><br>
 
     <script>
@@ -238,6 +239,7 @@ var init = function() {
   $('#getlink-btn').click(function()
   {
       mode = "link";
+      $('#giphylink').val('等我變成連結><');
       genGIF();
   });
 
@@ -321,6 +323,7 @@ var init = function() {
       method:'share',
       href:url
     }, function(response){});*/
+    $('#title').text('Sketch Academy 垃圾鴿創意工具包: 處理完成！');
       startAnimation();
   }
   $('#copy-btn').click(function(){
