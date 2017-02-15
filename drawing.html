@@ -146,7 +146,17 @@ label {
     <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
     <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
     <a id="export" class="btn btn-info">下載GIF動畫</button></a>
-    <a id="share" class="btn btn-info">分享至FB</button></a>
+    <a id="getlink-btn" class="btn btn-info">產生GIPHY連結</button></a>
+    <!--<a id="share" class="btn btn-info">分享至FB</button></a>-->
+    <input type="text" id="giphylink" value="尚未產生 Not Ready">
+    <button id="copy-btn" class="btn btn-info">複製</button><br>
+
+    <script>
+      function copyToClipboard(text) {
+        window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+      }
+    </script>
+
     <a id="download"></a> 
   </div>
 </div>
@@ -225,6 +235,13 @@ var init = function() {
       mode = "share";
       genGIF();    
   });
+  $('#getlink-btn').click(function()
+  {
+      mode = "link";
+      genGIF();
+  });
+
+  //$('#giphylink')[0].disabled = true;
   
   var encoder;
   function genGIF(){
@@ -263,6 +280,10 @@ var init = function() {
             {
               shareGIF();
             }
+            else if(mode=="link")
+            {
+               shareGIF();
+            }
             return;  
           }
           setTimeout(renderFrame,10);
@@ -289,13 +310,29 @@ var init = function() {
   {
       uploadFirebase(encodeImage(),giphyLinkGet);
   }
+  var currentGiphyLink = '';
   var giphyLinkGet = function(url)
   {
+    $('#giphylink').val(url);
+    currentGiphyLink = url;
+    copy(url);
+    /*
       FB.ui({
       method:'share',
       href:url
-    }, function(response){});
+    }, function(response){});*/
       startAnimation();
+  }
+  $('#copy-btn').click(function(){
+    copy(currentGiphyLink);
+  });
+  function copy(s) {
+      
+    var clip_area = $('#giphylink');
+    clip_area.val(s);
+    clip_area.text(s);
+    clip_area.select();
+    document.execCommand('copy');
   }
 //FB Share end
 
@@ -404,7 +441,10 @@ var init = function() {
       else if(isMacintosh())
       {
 
-        if (evtobj.keyCode == 90 && evtobj.metaKey) alert("Ctrl+z");   
+        if (evtobj.keyCode == 90 && evtobj.metaKey) 
+        {
+          //undo
+        }
       }
   }
 
