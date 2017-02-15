@@ -371,11 +371,13 @@ label {
   fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
   fabric.Object.prototype.transparentCorners = false;
 
+  /*
   for (var i = 0, len = 1; i < len; i++) {
     for (var j = 0, jlen = 1; j < jlen; j++) {
       fabric.Sprite.fromURL('img/pigeon.png', createSprite(i, j));
     }
-  }
+  }*/
+  fabric.Sprite.fromURL('img/pigeon.png', createSprite(4, 4));
 
   function createSprite(i, j) {
     return function(sprite) {
