@@ -71,16 +71,20 @@
   <img src="img/bird2.png" style="display:none;" id="bird2">
   <img src="img/bird3.png" style="display:none;" id="bird3">
 <script>
+var appId;
 (function() {
 
   if (document.location.hostname === 'localhost') {
+    /*
     var links = document.getElementById('header').getElementsByTagName('a');
     for (var i = 0, len = links.length; i < len; i++) {
       // very retarted fix but fuck it
       links[i].href = links[i].href.replace('fabricjs.com', 'localhost:4000');
-    }
+    }*/
+    appId = "1773186576336018";
   }
   else {
+    appId = "1514218208899524";
     /*
     var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
     s.async = true;
@@ -125,11 +129,16 @@ label {
 <div class="button-area">
 -->
     
-<div class="col-lg-6">
-<canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
-</div>
-<div class="col-lg-2">
-  <div style="display: inline-block; margin-left: 10px">
+<!--<div class="col-lg-6">-->
+
+
+
+
+<div class="content-area row">
+<div class="drawing-area col-xs-12 col-sm-6 col-md-8">
+  <div class="button-area">
+
+    <!--<div style="display: inline-block; margin-left: 10px">-->
     <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
     <button id="clear-canvas" class="btn btn-info">清除Clear</button><br>
     <button id="stamp1" class="btn btn-info">產生垃圾鴿</button><br>
@@ -141,6 +150,10 @@ label {
     <a id="download"></a> 
   </div>
 </div>
+  <div class="canvas-area">
+    <canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
+  </div>
+  </div>
 
 <div class="control-area col-xs-6 col-md-4 test">
   <div id="drawing-mode-options">
@@ -279,8 +292,8 @@ var init = function() {
   var giphyLinkGet = function(url)
   {
       FB.ui({
-      method: 'share',
-      href: url
+      method:'share',
+      href:url
     }, function(response){});
       startAnimation();
   }
@@ -718,11 +731,7 @@ init();
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.8&appId=1514218208899524";
-      //deploy
-      //1514218208899524
-      //local
-      //1773186576336018
+      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.8&appId="+appId;
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
     </script>
