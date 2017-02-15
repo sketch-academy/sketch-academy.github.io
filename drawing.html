@@ -184,24 +184,27 @@ label {
 
     <label for="drawing-color">Line color:</label>
     <input type="color" value="#000000" id="drawing-color"><br>
-
+<!--
     <label for="drawing-shadow-color">Shadow color:</label>
     <input type="color" value="#005E7A" id="drawing-shadow-color"><br>
 
+    
     <label for="drawing-shadow-width">Shadow width:</label>
     <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width"><br>
     <label for="drawing-shadow-offset">Shadow offset:</label>
     <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
+    -->
     <div>supported by fabric.js</div>
-    <p id="info" style="font-size: 24px;">來幫開發團隊來按個讚</p>
-    <div align="center" class="fb-page" data-href="https://www.facebook.com/SketchAcademy/" data-tabs="timeline" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/SketchAcademy/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/SketchAcademy/">SketchAcademy</a></blockquote></div>
+  
+  
   </div>
 </div>
 
 </div>
-
-
-
+</div>
+<div class="col-lg-4 col-lg-offset-4">
+  <p id="info" style="font-size: 24px;">來幫開發團隊來按個讚</p>
+    <div align="center" class="fb-page" data-href="https://www.facebook.com/SketchAcademy/" data-tabs="timeline" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/SketchAcademy/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/SketchAcademy/">SketchAcademy</a></blockquote></div>
 </div>
 <script id="main">
 
@@ -704,12 +707,14 @@ var init = function() {
     console.log(this.value);
     canvas.freeDrawingBrush.color = this.value;
   };
-  drawingShadowColorEl.onchange = function() {
-    canvas.freeDrawingBrush.shadowColor = this.value;
-  };
+  
   drawingLineWidthEl.onchange = function() {
     canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
     this.previousSibling.innerHTML = this.value;
+  };
+  /*
+  drawingShadowColorEl.onchange = function() {
+    canvas.freeDrawingBrush.shadowColor = this.value;
   };
   drawingShadowWidth.onchange = function() {
     canvas.freeDrawingBrush.shadowBlur = parseInt(this.value, 10) || 0;
@@ -720,7 +725,7 @@ var init = function() {
     canvas.freeDrawingBrush.shadowOffsetY = parseInt(this.value, 10) || 0;
     this.previousSibling.innerHTML = this.value;
   };
-
+*/
   if (canvas.freeDrawingBrush) {
     canvas.freeDrawingBrush.color = drawingColorEl.value;
     canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
