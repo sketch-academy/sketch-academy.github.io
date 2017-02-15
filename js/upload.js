@@ -6,7 +6,7 @@ var imgRef;
 function uploadFirebase(data_url,callback)
 {
 	// Base64 formatted string
-	var id = 'test';//ID();
+	var id = ID();
 	imgRef = storageRef.child('images/'+id+'.gif');
 	imgRef.putString(data_url, 'base64').then(function(snapshot) {
 	  
