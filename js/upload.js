@@ -36,8 +36,7 @@ function getFileURL(callback)
 
 function uploadToGiphy(url,callback)
  {
- 	console.log(callback);
-  	console.log(url);
+ 
     $.ajax({
       type: 'POST',
       url: 'https://upload.giphy.com/v1/gifs',
@@ -49,12 +48,12 @@ function uploadToGiphy(url,callback)
       },
       success: function(e)
       {
-      	console.log(e);
+      	
       	getShareLink(e.data.id,callback);
       },
       error: function(e)
       {
-        console.log(e);
+        
       }
   });  
   }
@@ -62,11 +61,10 @@ function uploadToGiphy(url,callback)
   
 function getShareLink(giphy_id,callback)
 {
-	var request = "http://api.giphy.com/v1/gifs/"+giphy_id+"?api_key=dc6zaTOxFJmzC";
-	console.log(request);
-	console.log(callback);
+	var request = "https://api.giphy.com/v1/gifs/"+giphy_id+"?api_key=dc6zaTOxFJmzC";
+	
 	$.get(request, function( data ) {
-		console.log(callback);
+		
 		callback(data.data.bitly_url);
 });
 }
