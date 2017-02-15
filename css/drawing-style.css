@@ -13,16 +13,23 @@
 	float: left;
 }
 .drawing-area{
-	width: 70%;
+	width: 65%;
 }
 .control-area{
 	width: 20%;
 }
 .button-area{
-	padding-top: 10px;
-	padding-left: 10px;
+	padding: 5px 10px;
 }
 .canvas-area{
 	padding-left: 10px;
-
 }
+.description-title{
+	font-size: 22px;
+	font-weight: bold;
+	width: 100%;
+}
+.description p{
+	font-size: 16px;
+}
+.test{ border: 1px #ff0000 solid; }
