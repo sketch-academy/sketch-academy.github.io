@@ -345,7 +345,6 @@ label {
 
   document.onkeydown = KeyPress;
   $(document).unbind('keyup').bind('keyup',function(e){
-    console.log(e.keyCode);
       if(e.keyCode == 8||e.keyCode == 46) {
         if(document.activeElement == $('body').get(0))
          {
@@ -433,7 +432,7 @@ label {
       drawingShadowWidth = $('#drawing-shadow-width')[0],
       drawingShadowOffset = $('#drawing-shadow-offset')[0],
       clearEl = $('#clear-canvas')[0];
-      console.log(drawingModeEl);
+  //    console.log(drawingModeEl);
   
   clearEl.onclick = function() { 
     canvas.clear();
@@ -449,16 +448,11 @@ label {
   $('#stamp3')[0].onclick = function(){
     addImageWithDOM($('#bird3')[0]);
   }*/
-  canvas.on({'after:render':function()
-{
-  //merge();
-  console.log('render');
-  //merge();
-}})
+  
   canvas.on({'path:created':function()
 {
   //merge();
-  console.log('render');
+  //console.log('render');
   //merge();
 }})
   drawingModeEl.onclick = function() {
