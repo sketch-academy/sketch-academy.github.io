@@ -148,10 +148,10 @@ label {
       <option>diamond</option>
     </select><br>
     <label for="drawing-line-width">Line width:</label>
-    <span class="info">30</span><input type="range" value="30" min="0" max="150" id="drawing-line-width"><br>
+    <span class="info">10</span><input type="range" value="10" min="0" max="150" id="drawing-line-width"><br>
 
     <label for="drawing-color">Line color:</label>
-    <input type="color" value="#005E7A" id="drawing-color"><br>
+    <input type="color" value="#000000" id="drawing-color"><br>
 
     <label for="drawing-shadow-color">Shadow color:</label>
     <input type="color" value="#005E7A" id="drawing-shadow-color"><br>
@@ -457,11 +457,11 @@ label {
     canvas.isDrawingMode = !canvas.isDrawingMode;
     if (canvas.isDrawingMode) {
       drawingModeEl.innerHTML = '進入編輯模式';
-      drawingOptionsEl.style.display = '';
+      //drawingOptionsEl.style.display = '';
     }
     else {
       drawingModeEl.innerHTML = '使用繪圖工具';
-      drawingOptionsEl.style.display = 'none';
+      //drawingOptionsEl.style.display = 'none';
     }
   };
 
