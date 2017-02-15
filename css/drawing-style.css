@@ -1,0 +1,28 @@
+.logo{
+    float: left;
+    width: 21px;
+    height: 21px;
+    margin-right: 7px;
+}
+.content-area{
+	padding: 10px;
+	overflow: hidden;
+	margin: 5%;
+}
+.content-area div{
+	float: left;
+}
+.drawing-area{
+	width: 70%;
+}
+.control-area{
+	width: 20%;
+}
+.button-area{
+	padding-top: 10px;
+	padding-left: 10px;
+}
+.canvas-area{
+	padding-left: 10px;
+
+}

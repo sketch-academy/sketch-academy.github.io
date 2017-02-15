@@ -10,10 +10,10 @@
     </style>
     <!-- Bootstrap Core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Theme CSS -->
     <link href="css/freelancer.min.css" rel="stylesheet">
-
+    <link href="css/drawing-style.css" rel="stylesheet">
+    <!-- Theme CSS -->
+    
     <!--[if lt IE 9]>
       <script src="../lib/excanvas.js"></script>
     <![endif]-->
@@ -49,7 +49,7 @@
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand" id="title">Sketch Academy 垃圾鴿創意工具包</a>
+                <a class="navbar-brand" id="title"><img class="logo" src="img/logo.png"/>Sketch Academy 垃圾鴿創意工具包</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
@@ -115,25 +115,27 @@ label {
   background: #ffc;
 }
 #bd-wrapper {
-  min-width: 1500px;
+  /*min-width: 1500px;*/
 }
 </style>
-<div class="col-lg-6">
-<canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
+<div class="content-area row">
+<div class="drawing-area col-xs-12 col-sm-6 col-md-8">
+  <div class="button-area">
+    <button id="drawing-mode" class="btn btn-info">進入編輯模式</button>
+    <button id="clear-canvas" class="btn btn-info">清除Clear</button>
+    <button id="stamp1" class="btn btn-info">產生垃圾鴿</button>
+    <!--<button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
+    <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
+    <a id="export" class="btn btn-info">下載GIF動畫</button></a>
+    <a id="download"></a> 
+  </div>
+  <div class="canvas-area">
+    <canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
+
+  </div>
 </div>
-<div class="col-lg-2">
-<div style="display: inline-block; margin-left: 10px">
-  <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
-  <button id="clear-canvas" class="btn btn-info">清除Clear</button><br>
-  <button id="stamp1" class="btn btn-info">產生垃圾鴿</button><br>
-  <!--
-  <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
-  <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
-  <a id="export" class="btn btn-info">下載GIF動畫</button></a>
-  <a id="download"></a> 
-  </div>
-  </div>
-  <div class="col-lg-3">
+
+<div class="control-area col-xs-6 col-md-4 test">
   <div id="drawing-mode-options">
     <label for="drawing-mode-selector">Mode:</label>
     <select id="drawing-mode-selector">
@@ -164,6 +166,8 @@ label {
     <p id="info" style="font-size: 24px;">來幫開發團隊來按個讚</p>
     <div align="center" class="fb-page" data-href="https://www.facebook.com/SketchAcademy/" data-tabs="timeline" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/SketchAcademy/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/SketchAcademy/">SketchAcademy</a></blockquote></div>
   </div>
+</div>
+
 </div>
 <script id="main">
 
@@ -656,4 +660,5 @@ label {
               <!-- Comment #4: Plugin Code -->
               <div class="fb-quote"></div>
   </body>
+  
 </html>
