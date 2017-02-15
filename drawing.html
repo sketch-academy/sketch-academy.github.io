@@ -146,7 +146,7 @@ label {
     <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
     <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
     <a id="export" class="btn btn-info">下載GIF動畫</button></a>
-    <!--<a id="share" class="btn btn-info">分享至FB</button></a>-->
+    <a id="share" class="btn btn-info">分享至FB</button></a>
     <a id="download"></a> 
   </div>
 </div>
@@ -222,8 +222,8 @@ var init = function() {
   }
   $('#share').click(function()
   {
-      //mode = "share";
-      //genGIF();    
+      mode = "share";
+      genGIF();    
   });
   
   var encoder;

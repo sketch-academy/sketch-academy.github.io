@@ -40,7 +40,7 @@ function uploadToGiphy(url,callback)
   	console.log(url);
     $.ajax({
       type: 'POST',
-      url: 'http://upload.giphy.com/v1/gifs',
+      url: 'https://upload.giphy.com/v1/gifs',
       data: {
           username: 'chvwdte0mtzaewfob28uy29tlnr3',
           api_key: 'dc6zaTOxFJmzC',
