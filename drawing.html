@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title >SketchAcademy 畫圖創意工具</title>
+
+    <link rel="stylesheet" href="../css/master.css">
+    <link rel="stylesheet" href="../css/prism.css">
+    <style>
+      pre { margin-left: 15px !important }
+    </style>
+    <!-- Bootstrap Core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="css/freelancer.min.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+      <script src="../lib/excanvas.js"></script>
+    <![endif]-->
+
+
+    <script>
+      (function() {
+        var fabricUrl = 'http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.7.3/fabric.min.js';
+        if (document.location.search.indexOf('load_fabric_from=') > -1) {
+          var match = document.location.search.match(/load_fabric_from=([^&]*)/);
+          if (match && match[1]) {
+            fabricUrl = match[1];
+          }
+        }
+        document.write('<script src="' + fabricUrl + '"><\/script>');
+      })();
+    </script>
+    <script type="text/javascript" src="js/b64.js"></script>
+    <script type="text/javascript" src="js/LZWEncoder.js"></script>
+    <script type="text/javascript" src="js/NeuQuant.js"></script>
+    <script type="text/javascript" src="js/GIFEncoder.js"></script>
+
+    <script src="js/fabricSprite.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular.min.js"></script>
+  </head>
+  <body>
+  <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" id="title">Sketch Academy 垃圾鴿創意工具包</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li class="page-scroll">
+                        <a href="/">結束繪畫</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+  <img src="img/bird1.png" style="display:none;" id="bird1">
+  <img src="img/bird2.png" style="display:none;" id="bird2">
+  <img src="img/bird3.png" style="display:none;" id="bird3">
+<script>
+(function() {
+
+  if (document.location.hostname === 'localhost') {
+    var links = document.getElementById('header').getElementsByTagName('a');
+    for (var i = 0, len = links.length; i < len; i++) {
+      // very retarted fix but fuck it
+      links[i].href = links[i].href.replace('fabricjs.com', 'localhost:4000');
+    }
+  }
+  else {
+    var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+    s.async = true;
+    s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+    t.parentNode.insertBefore(s, t);
+
+    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+  }
+})();
+</script>
+<div id="content" style="margin-top: 100px">
+    <div id="bd-wrapper" ng-controller="CanvasControls">
+      <style>
+#drawing-mode {
+  margin-bottom: 10px;
+  vertical-align: top;
+}
+#drawing-mode-options {
+  display: inline-block;
+  vertical-align: top;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  background: #f5f2f0;
+  padding: 10px;
+}
+label {
+  display: inline-block; width: 130px;
+}
+.info {
+  display: inline-block;
+  width: 25px;
+  background: #ffc;
+}
+#bd-wrapper {
+  min-width: 1500px;
+}
+</style>
+<div class="col-lg-8">
+<canvas id="c" width="720" height="540" style="border:1px solid #aaa"></canvas>
+</div>
+<div class="col-lg-4">
+<div style="display: inline-block; margin-left: 10px">
+  <button id="drawing-mode" class="btn btn-info">進入編輯模式</button><br>
+  <button id="clear-canvas" class="btn btn-info">Clear</button><br>
+  <button id="stamp1" class="btn btn-info">產生垃圾鴿1</button><br>
+  <!--
+  <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
+  <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
+  <a id="export" class="btn btn-info">下載作品</button></a>
+  <a id="download"></a> 
+  <button id="nextFrame">NextFrame</button>
+  <div id="drawing-mode-options">
+    <label for="drawing-mode-selector">Mode:</label>
+    <select id="drawing-mode-selector">
+      <option>Pencil</option>
+      <option>擦子</option>
+      <option>Circle</option>
+      <option>Spray</option>
+      <option>Pattern</option>
+      <option>hline</option>
+      <option>vline</option>
+      <option>square</option>
+      <option>diamond</option>
+    </select><br>
+    <label for="drawing-line-width">Line width:</label>
+    <span class="info">30</span><input type="range" value="30" min="0" max="150" id="drawing-line-width"><br>
+
+    <label for="drawing-color">Line color:</label>
+    <input type="color" value="#005E7A" id="drawing-color"><br>
+
+    <label for="drawing-shadow-color">Shadow color:</label>
+    <input type="color" value="#005E7A" id="drawing-shadow-color"><br>
+
+    <label for="drawing-shadow-width">Shadow width:</label>
+    <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-width"><br>
+    <label for="drawing-shadow-offset">Shadow offset:</label>
+    <span class="info">0</span><input type="range" value="0" min="0" max="50" id="drawing-shadow-offset"><br>
+    <div>supported by fabric.js</div>
+    <p id="info" style="font-size: 24px;">INFO</p>
+  </div>
+</div>
+</div>
+<script id="main">
+
+(function() {
+
+  var obj = new Object();
+  //var $ = function(id){return document.getElementById(id)};
+  addImageWithDOM = function(img_dom)
+  {
+      console.log(img_dom);
+      var img = new fabric.Image(img_dom, {
+        originX: 'center',
+        originY: 'center',
+         left: 400,
+         top: 400,
+    lockUniScaling:true
+      });
+      canvas.add(img);
+
+      img.on('selected', function() {
+        obj.currentSelected = img;
+        //sync();
+      });
+      canvas.renderAll();
+  }
+  var downloadElement;
+  $('#export')[0].onclick = function()
+  {
+    console.log("download");
+    downloadElement = $('#download')[0];
+    genGIF();
+    //genGIF();
+  }
+  $('#nextFrame')[0].onclick = function()
+  {
+    canvas.renderAll();
+  }
+  var encoder;
+  function genGIF(){
+    encoder = new GIFEncoder();
+    /*
+    gif = new GIF({
+    workers: 1,
+    quality: 10
+    });*/
+    count = 15;
+    var delay = 100;
+    encoder.setRepeat(0);
+    encoder.setDelay(100);
+    encoder.start();
+    playingAnim = false;
+    
+    count = 8;
+    renderFrame();
+    $("#title").text("輸出中請稍候！");
+    $("#info").text("輸出中請稍候！");
+    // or copy the pixels from a canvas context
+    //gif.addFrame(canvas.getContext() , {copy: true});
+  }
+  function renderFrame()
+  {
+      encoder.addFrame(canvas.getContext());
+      render();
+      if(count>0)
+      {
+          count--;
+          if(count==0)
+          {
+            exportGIF();
+            return;  
+          }
+          setTimeout(renderFrame,10);
+      }
+  }
+
+  function exportGIF()
+  {
+    encoder.finish();
+    var binary_gif = encoder.stream().getData() //notice this is different from the as3gif package!
+    var data_url = 'data:image/gif;base64,'+encode64(binary_gif);
+    //return data_url;
+    /*
+    gif.on('finished', function(blob) {
+      window.open(URL.createObjectURL(blob));
+    });
+    gif.render();*/
+    generateLink(downloadElement,data_url);
+  }
+  function merge()
+  {
+    var group = [];
+    canvas.getObjects().forEach(function (obj) {
+      obj.globalCompositeOperation = "or";
+      group.push(obj);
+    });
+    
+    canvas.clear().add(new fabric.Group(group));
+    canvas.backgroundColor="white";
+    canvas.renderAll();
+  }
+
+  function generateLink(link,data_url)
+  {
+      //console.log(link);
+      link.href = data_url;//getImage();
+      link.download = "test.gif";
+      link.click();
+      $('#title').text('Sketch Academy 垃圾鴿創意工具包');
+  }
+  function shareToFB(method)
+  {
+    var data = getImage();
+    console.log(method);
+    if(method=='event')
+    {
+      postImage(data,event_fb_url);
+    }
+    else if(method=='me')
+    { 
+      postImage(data,myfeed_fb_url);
+    } 
+  }
+  var getImage = function()
+  {
+    //var appid = '145634995501895';
+    canvas.deactivateAll().renderAll();
+    var data = canvas.toDataURL();
+    try{
+    blob = dataURItoBlob(data);
+    }catch(e){console.log(e);}
+
+
+    //var fd = new FormData();
+    //fd.append("access_token",authToken);
+    //fd.append("source", blob);
+    //fd.append("message",message);
+    return data;
+  }
+
+  function dataURItoBlob(dataURI) {
+    var byteString = atob(dataURI.split(',')[1]);
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: 'image/png' });
+  }
+  $(document).unbind('keyup').bind('keyup',function(e){
+    console.log(e.keyCode);
+      if(e.keyCode == 8||e.keyCode == 46) {
+        if(document.activeElement == $('body').get(0))
+         {
+           canvas.getActiveObject().remove();
+           
+         }
+        e.preventDefault();
+      }
+  });
+  function KeyPress(e) {
+      var evtobj = window.event? event : e
+      if(isWindows())
+      {
+        if (evtobj.keyCode == 90 && evtobj.ctrlKey) alert("Ctrl+z");  
+      }
+      else if(isMacintosh())
+      {
+
+        if (evtobj.keyCode == 90 && evtobj.metaKey) alert("Ctrl+z");   
+      }
+      
+  }
+
+  function isMacintosh() {
+  return navigator.platform.indexOf('Mac') > -1
+  }
+
+  function isWindows() {
+    return navigator.platform.indexOf('Win') > -1
+  }
+
+  document.onkeydown = KeyPress;
+  $(document).unbind('keyup').bind('keyup',function(e){
+    console.log(e.keyCode);
+      if(e.keyCode == 8||e.keyCode == 46) {
+        if(document.activeElement == $('body').get(0))
+         {
+           canvas.getActiveObject().remove();
+           
+         }
+        e.preventDefault();
+      }
+      /*
+      else if(e.keyCode==17)
+      {
+        currentSelected.lockMovementX = false;
+      }
+      else if(e.keyCode==16)
+      {
+        currentSelected.lockMovementY = false;  
+      }*/
+  });
+
+  var canvas = this.__canvas = new fabric.Canvas('c', {
+    isDrawingMode: true
+  });
+
+  fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+  fabric.Object.prototype.transparentCorners = false;
+
+  for (var i = 0, len = 1; i < len; i++) {
+    for (var j = 0, jlen = 1; j < jlen; j++) {
+      fabric.Sprite.fromURL('/img/pigeon.png', createSprite(i, j));
+    }
+  }
+
+  function createSprite(i, j) {
+    return function(sprite) {
+      sprite.set({
+        left: i * 100 + 50,
+        top: j * 100 + 50,
+        angle: fabric.util.getRandomInt(-30, 30)
+      });
+      canvas.add(sprite);
+      setTimeout(function() {
+        sprite.play();
+      }, fabric.util.getRandomInt(1, 10) * 100);
+    };
+  }
+
+  
+  var count = 0;
+  
+
+  function render()
+  {
+    canvas.renderAll();
+  }
+  render();
+
+  var playingAnim = true;
+  function startAnimation()
+  {
+    playingAnim = true;
+    animate();
+  }
+  function animate()
+  {
+    if(playingAnim)
+    {
+      render();
+      fabric.util.requestAnimFrame(animate);
+    }
+  }
+
+
+  canvas.backgroundColor="white";
+
+  fabric.Object.prototype.transparentCorners = false;
+
+  var drawingModeEl = $('#drawing-mode')[0],
+      drawingOptionsEl = $('#drawing-mode-options')[0],
+      drawingColorEl = $('#drawing-color')[0],
+      drawingShadowColorEl = $('#drawing-shadow-color')[0],
+      drawingLineWidthEl = $('#drawing-line-width')[0],
+      drawingShadowWidth = $('#drawing-shadow-width')[0],
+      drawingShadowOffset = $('#drawing-shadow-offset')[0],
+      clearEl = $('#clear-canvas')[0];
+      console.log(drawingModeEl);
+  
+  clearEl.onclick = function() { 
+    canvas.clear();
+    canvas.backgroundColor="white";
+  };
+  $('#stamp1')[0].onclick = function(){
+    fabric.Sprite.fromURL('/img/pigeon.png', createSprite(2, 3));
+  }
+  /*
+  $('#stamp2')[0].onclick = function(){
+    addImageWithDOM($('#bird2')[0]);
+  }
+  $('#stamp3')[0].onclick = function(){
+    addImageWithDOM($('#bird3')[0]);
+  }*/
+  canvas.on({'after:render':function()
+{
+  //merge();
+  console.log('render');
+  //merge();
+}})
+  canvas.on({'path:created':function()
+{
+  //merge();
+  console.log('render');
+  //merge();
+}})
+  drawingModeEl.onclick = function() {
+    canvas.isDrawingMode = !canvas.isDrawingMode;
+    if (canvas.isDrawingMode) {
+      drawingModeEl.innerHTML = '進入編輯模式';
+      drawingOptionsEl.style.display = '';
+    }
+    else {
+      drawingModeEl.innerHTML = '使用繪圖工具';
+      drawingOptionsEl.style.display = 'none';
+    }
+  };
+
+  if (fabric.PatternBrush) {
+    var vLinePatternBrush = new fabric.PatternBrush(canvas);
+    vLinePatternBrush.getPatternSrc = function() {
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = 10;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(0, 5);
+      ctx.lineTo(10, 5);
+      ctx.closePath();
+      ctx.stroke();
+
+      return patternCanvas;
+    };
+
+
+    var hLinePatternBrush = new fabric.PatternBrush(canvas);
+    hLinePatternBrush.getPatternSrc = function() {
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = 10;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(5, 0);
+      ctx.lineTo(5, 10);
+      ctx.closePath();
+      ctx.stroke();
+
+      return patternCanvas;
+    };
+
+    var squarePatternBrush = new fabric.PatternBrush(canvas);
+    squarePatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 2;
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.fillStyle = this.color;
+      ctx.fillRect(0, 0, squareWidth, squareWidth);
+
+      return patternCanvas;
+    };
+
+    var diamondPatternBrush = new fabric.PatternBrush(canvas);
+    diamondPatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 5;
+      var patternCanvas = fabric.document.createElement('canvas');
+      var rect = new fabric.Rect({
+        width: squareWidth,
+        height: squareWidth,
+        angle: 45,
+        fill: this.color
+      });
+
+      var canvasWidth = rect.getBoundingRectWidth();
+
+      patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
+      rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
+
+      var ctx = patternCanvas.getContext('2d');
+      rect.render(ctx);
+
+      return patternCanvas;
+    };
+
+    var img = new Image();
+    img.src = '../assets/honey_im_subtle.png';
+
+    //var texturePatternBrush = new fabric.PatternBrush(canvas);
+    //texturePatternBrush.source = img;
+  }
+
+  $('#drawing-mode-selector')[0].onchange = function() {
+    if (this.value === 'hline') {
+      canvas.freeDrawingBrush = vLinePatternBrush;
+    }
+    else if(this.value =='擦子')
+    {
+      canvas.freeDrawingBrush = new fabric['PencilBrush'](canvas);
+      canvas.freeDrawingBrush.color = "#FFFFFF";
+      canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+      canvas.freeDrawingBrush.shadowBlur = parseInt(drawingShadowWidth.value, 10) || 0;
+      console.log(canvas.freeDrawingBrush.color);
+      return;
+    }
+    else if (this.value === 'vline') {
+      canvas.freeDrawingBrush = hLinePatternBrush;
+    }
+    else if (this.value === 'square') {
+      canvas.freeDrawingBrush = squarePatternBrush;
+    }
+    else if (this.value === 'diamond') {
+      canvas.freeDrawingBrush = diamondPatternBrush;
+    }
+    else if (this.value === 'texture') {
+      canvas.freeDrawingBrush = texturePatternBrush;
+    }
+    else {
+      canvas.freeDrawingBrush = new fabric[this.value + 'Brush'](canvas);
+    }
+
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = drawingColorEl.value;
+      canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+      canvas.freeDrawingBrush.shadowBlur = parseInt(drawingShadowWidth.value, 10) || 0;
+    }
+  };
+
+  drawingColorEl.onchange = function() {
+    console.log(this.value);
+    canvas.freeDrawingBrush.color = this.value;
+  };
+  drawingShadowColorEl.onchange = function() {
+    canvas.freeDrawingBrush.shadowColor = this.value;
+  };
+  drawingLineWidthEl.onchange = function() {
+    canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
+    this.previousSibling.innerHTML = this.value;
+  };
+  drawingShadowWidth.onchange = function() {
+    canvas.freeDrawingBrush.shadowBlur = parseInt(this.value, 10) || 0;
+    this.previousSibling.innerHTML = this.value;
+  };
+  drawingShadowOffset.onchange = function() {
+    canvas.freeDrawingBrush.shadowOffsetX =
+    canvas.freeDrawingBrush.shadowOffsetY = parseInt(this.value, 10) || 0;
+    this.previousSibling.innerHTML = this.value;
+  };
+
+  if (canvas.freeDrawingBrush) {
+    canvas.freeDrawingBrush.color = drawingColorEl.value;
+    canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+    canvas.freeDrawingBrush.shadowBlur = 0;
+  }
+})();
+</script>
+
+    </div>
+</div>
+    
+
+    <script>
+(function() {
+  fabric.util.addListener(fabric.window, 'load', function() {
+    var canvas = this.__canvas || this.canvas,
+        canvases = this.__canvases || this.canvases;
+
+    canvas && canvas.calcOffset && canvas.calcOffset();
+
+    if (canvases && canvases.length) {
+      for (var i = 0, len = canvases.length; i < len; i++) {
+        canvases[i].calcOffset();
+      }
+    }
+  });
+})();
+</script>
+
+
+  </body>
+</html>
