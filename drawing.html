@@ -138,11 +138,12 @@ label {
       <p><b>取得貼圖：</b>畫作完成後，點選「產生GIPHY連結」，請稍有耐心，等待文字框中跳出連結文字，點選複製，直接將這段連結貼在FB塗鴉牆或留言上就會產生動畫貼圖</p>
       <p>只要在FB貼完後有出現圖的樣子即可(可能還不一定會動)，有時候Facebook需要一些時間處理檔案，過一小段時間後重整即可</p>
       </div>
-      
+      <h1 id="slot-game-items"></h1> 
+
       <button id="drawing-mode" class="btn btn-info">進入編輯模式</button>
-      <button id="clear-canvas" class="btn btn-info">清除Clear</button>
-      <button id="stamp1" class="btn btn-info">產生搖頭鴿</button><br/>
-      <button id="stamp2" class="btn btn-info">產生趴地鴿</button><br/>
+      <button id="clear-canvas" class="btn btn-info">清除Clear</button><br/>
+      <button id="stamp1" class="btn btn-info">產生搖頭鴿</button>
+      <button id="stamp2" class="btn btn-info">產生趴地鴿</button>
       <button id="stamp3" class="btn btn-info">cat</button><br/>
       <input type="text" id="add-text-field" value="了不起，負責"/>
       <button id="add-text-btn" class="btn btn-info">添加文字</button><br/>
@@ -842,9 +843,8 @@ init();
       };
       firebase.initializeApp(config);
 </script>
-<script src="js/upload.js">
-  
-</script>
+<script src="js/upload.js"></script>
+<script src="js/slotGame.js"></script>
 <div id="fb-root"></div>
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];

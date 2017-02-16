@@ -65,6 +65,26 @@ function getShareLink(giphy_id,callback)
 {
   	var request = "https://api.giphy.com/v1/gifs/"+giphy_id+"?api_key=dc6zaTOxFJmzC";
   	$.get(request, function( data ) {
+        writeGameData(game_ch,game_place,game_verb,giphy_id)
     		callback(data.data.bitly_url);
     });
+}
+
+function writeGameData(ch,place,verb,giphy_id) {
+  if(ch!=null&&place!=null&&verb!=null)
+  {
+    firebase.database().ref('slotgame/' + giphy_id).set({
+    ch: ch,
+    place: place,
+    verb : verb
+    });  
+  }
+}
+
+function writeUserData(userId, name, email, imageUrl) {
+  firebase.database().ref('users/' + userId).set({
+    username: name,
+    email: email,
+    profile_picture : imageUrl
+  });
 }
