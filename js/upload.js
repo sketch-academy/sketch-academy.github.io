@@ -19,10 +19,12 @@ var ID = function () {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
-  var id = '_' + Math.random().toString(36).substr(2, 9);
-  
-  return id;
-  
+  var d = new Date();
+  var n = d.getTime();
+  return n;
+
+  //var id = '_' + Math.random().toString(36).substr(2, 9);
+  //return id;
 };
 
 function getFileURL(callback)
