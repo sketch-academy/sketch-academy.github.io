@@ -141,7 +141,11 @@ label {
       
       <button id="drawing-mode" class="btn btn-info">進入編輯模式</button>
       <button id="clear-canvas" class="btn btn-info">清除Clear</button>
-      <button id="stamp1" class="btn btn-info">產生垃圾鴿</button><br/>
+      <button id="stamp1" class="btn btn-info">產生搖頭鴿</button><br/>
+      <button id="stamp2" class="btn btn-info">產生趴地鴿</button><br/>
+      <button id="stamp3" class="btn btn-info">cat</button><br/>
+      <input type="text" id="add-text-field" value="了不起，負責"/>
+      <button id="add-text-btn" class="btn btn-info">添加文字</button><br/>
       <!--
       <button id="stamp2" class="btn btn-info">產生垃圾鴿2</button><br>
       <button id="stamp3" class="btn btn-info">產生垃圾鴿3</button><br>-->
@@ -155,10 +159,13 @@ label {
         function copyToClipboard(text) {
           window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
         }
+        var ori_w = 760;
+        var ori_h = 540;
       </script>
 
       <a id="download"></a>
     </div>
+
     <div class="canvas-area">
       <canvas id="c" width="760" height="540" style="border:1px solid #aaa"></canvas>
     </div>
@@ -565,7 +572,65 @@ var init = function() {
   $('#stamp1')[0].onclick = function(){
     fabric.Sprite.fromURL('img/pigeon.png', createSprite(4, 4));
   }
+  $('#stamp2')[0].onclick = function(){
+    fabric.Sprite.fromURL('img/pigeon2.png', createSprite(4, 4));
+  }
+  $('#stamp3')[0].onclick = function(){
+    fabric.Sprite.fromURL('img/fuckingcat.png', createSprite(4, 4));
+  }
+  $('#add-text-btn').click(function(){
+    addText($('#add-text-field').val(),60);
+  });
   
+  var addText = function(string,size,x,y)
+  {
+    if (typeof x === 'undefined') { x = ori_w/2; }
+    if (typeof y === 'undefined') { y = ori_h/2; }
+  
+    var text = new fabric.Text(string, { 
+      left: x, top: y,
+      originX: 'center',
+      originY: 'center',
+      fontSize:size,
+      selectable:true,
+      lineHeight:1,
+      //lockMovementX: true,
+      lockUniScaling: true,
+      textAlign:'center',
+      minScaleLimit: 0.2,
+      maxScaleLimit: 3,
+      hasControls: true,
+        hasBorders: true
+    });
+    
+    canvas.add(text);
+    
+    /*
+    function syncTextValue()
+    {
+      var text_str = text.getText();
+      $(edit_text).val(text_str);
+    }
+    
+
+    text.on('selected', function() {
+      currentSelected = text;
+        syncTextValue();
+        sync();
+    });
+
+    text.on('scaling', function() {
+      console.log(text.fontSize);
+      currentSelected = text;
+    });*/
+    //textarray.push(text);
+    return text;
+  }
+  this.updateText = function(str)
+  {
+    currentSelected.setText(str);
+    canvas.renderAll();
+  }
   // canvas.on({'path:created':function()
   // {
   //   //merge();

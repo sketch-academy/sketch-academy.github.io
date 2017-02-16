@@ -8,12 +8,10 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
 
   initialize: function(element, options) {
     options || (options = { });
-
     options.width = this.spriteWidth;
     options.height = this.spriteHeight;
 
     this.callSuper('initialize', element, options);
-
     this.createTmpCanvas();
     this.createSpriteImages();
   },
@@ -27,12 +25,33 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
   createSpriteImages: function() {
     this.spriteImages = [ ];
 
-    var steps = this._element.width / this.spriteWidth;
-    for (var i = 0; i < steps; i++) {
-      this.createSpriteImage(i);
-    }
-  },
+    //var steps = this._element.width / this.spriteWidth;
+    var xsteps = this._element.width / this.spriteWidth;
+    var ysteps = this._element.height / this.spriteHeight;
+    if(ysteps>2)
+      ysteps = 2;
 
+     
+      for (var j = 0; j< ysteps; j++)
+        for (var i = 0; i < xsteps; i++)
+        {
+          this.createSpriteImage(i,j);
+        }
+    
+  },
+  createSpriteImage: function(i,j)
+  {
+     var tmpCtx = this.tmpCanvasEl.getContext('2d');
+    tmpCtx.clearRect(0, 0, this.tmpCanvasEl.width, this.tmpCanvasEl.height);
+    tmpCtx.drawImage(this._element, -i * this.spriteWidth, -j*this.spriteHeight);
+
+    var dataURL = this.tmpCanvasEl.toDataURL('image/png');
+    var tmpImg = fabric.util.createImage();
+    tmpImg.src = dataURL;
+
+    this.spriteImages.push(tmpImg);
+  },
+  /*
   createSpriteImage: function(i) {
     var tmpCtx = this.tmpCanvasEl.getContext('2d');
     tmpCtx.clearRect(0, 0, this.tmpCanvasEl.width, this.tmpCanvasEl.height);
@@ -44,7 +63,7 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
     tmpImg.src = dataURL;
 
     this.spriteImages.push(tmpImg);
-  },
+  },*/
 
   _render: function(ctx) {
     ctx.drawImage(
@@ -57,9 +76,7 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
   play: function() {
     var _this = this;
     this.animInterval = setInterval(function() {
-
       _this.onPlay && _this.onPlay();
-
       _this.spriteIndex++;
       if (_this.spriteIndex === _this.spriteImages.length) {
         _this.spriteIndex = 0;
