@@ -34,7 +34,7 @@ var init = function()
 
 $(document).ready(function(){
                         //$('draw-btn').
-                var characters = ['椅子', '鉛筆', '三隻貓咪', '月亮', '男孩', '狗', '女孩', '太陽', '水壺', '哈利波特', '忍者', '死神', '吸血鬼', '小精靈', '殭屍'];
+                var characters = ['檯燈','蘿莉','米老鼠','椅子', '鉛筆', '三隻貓咪', '月亮', '男孩', '狗', '女孩', '太陽', '水壺', '哈利波特', '忍者', '死神', '吸血鬼', '小精靈', '殭屍'];
 
                 characters.forEach(function(character){
                 $('#casino1').append("<div class='slot slot1'><p>"+character+"</p></div>");
