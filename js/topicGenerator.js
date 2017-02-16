@@ -80,7 +80,7 @@ $(document).ready(function(){
 					machine3.shuffle();
 					$('#draw-btn').hide();
 				});
-
+				$('#draw-btn').hide();
 				$("#slotMachineButtonStop").click(function(){
 					switch(started){
 						case 3:
