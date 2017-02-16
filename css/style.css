@@ -283,7 +283,7 @@ header a {
  */
 #casino {
     /*border-top: 20px dotted rgb(180, 75, 119);*/
-    padding-top: 50px;
+    
     
     /*orangei
     background-color: rgb(243, 165, 55);
@@ -297,9 +297,21 @@ header a {
     margin: 0px;
 }
 
+@media (min-width: 1200px) {
+    #casino .content:nth-child(1) {
+        height: 580px;
+        padding-top: 50px;
+    }
+}
+
+@media (max-width: 1199px) {
+    #casino .content:nth-child(1) {
+        padding-bottom: 50px;
+    }
+}
+
 #casino .content:nth-child(1) {
     text-align: center;
-    height: 580px;
 }
 
 #casino .content > div {
