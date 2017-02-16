@@ -18,5 +18,7 @@ $(document).ready(function(){
     game_ch = getUrlParameter('ch');
     game_place = getUrlParameter('place')
     game_verb = getUrlParameter('verb')
+    if(game_ch!=null)
     $('#slot-game-items').text('遊戲題目：甩頭鴿和'+game_ch+'在'+game_place+game_verb);
+    $('#rule').text('將你依照題目指示的畫作Po上我們的每日畫圖挑戰活動頁面讓大家猜猜看喔！');
 });
