@@ -6,7 +6,7 @@
  * Released under the MIT license
  */
 (function init($, window, document, undefined) {
-
+"use strict";
 const pluginName = 'slotMachine',
     defaults = {
         active: 0, // Active element [Number]
