@@ -7,7 +7,7 @@
  */
 (function init($, window, document, undefined) {
 "use strict";
-let pluginName = 'slotMachine',
+var pluginName = 'slotMachine',
     defaults = {
         active: 0, // Active element [Number]
         delay: 200, // Animation time [Number]
@@ -197,7 +197,7 @@ class SlotMachine {
      * @return {Number} - Element index
      */
     get visibleTile () {
-        let firstTileHeight = this.$tiles.first().height(),
+        var firstTileHeight = this.$tiles.first().height(),
             rawContainerMargin = this.$container.css('transform'),
             matrixRegExp = /^matrix\(-?\d+,\s?-?\d+,\s?-?\d+,\s?-?\d+,\s?-?\d+,\s?(-?\d+)\)$/,
             containerMargin = parseInt(rawContainerMargin.replace(matrixRegExp, '$1'), 10);
@@ -246,7 +246,7 @@ class SlotMachine {
      * @return {Number} - Element index
      */
     get _prevIndex () {
-        let prevIndex = this.active - 1;
+        var prevIndex = this.active - 1;
 
         return prevIndex < 0 ? (this.$tiles.length - 1) : prevIndex;
     }
@@ -256,7 +256,7 @@ class SlotMachine {
      * @return {Number} - Element index
      */
     get _nextIndex () {
-        let nextIndex = this.active + 1;
+        var nextIndex = this.active + 1;
 
         return nextIndex < this.$tiles.length ? nextIndex : 0;
     }
@@ -283,7 +283,7 @@ class SlotMachine {
      * @return {Number} - Returns true if machine is on the screen
      */
     get visible () {
-        let $window = $(window),
+        var $window = $(window),
             above = this.$slot.offset().top > $window.scrollTop() + $window.height(),
             below = $window.scrollTop() > this.$slot.height() + this.$slot.offset().top;
 
@@ -316,7 +316,7 @@ class SlotMachine {
      * @param string FX_SPEED - Element speed [FX_FAST_BLUR||FX_NORMAL_BLUR||FX_SLOW_BLUR||FX_STOP]
      */
     set _fxClass (FX_SPEED) {
-        let classes = [FX_FAST, FX_NORMAL, FX_SLOW, FX_TURTLE].join(' ');
+        var classes = [FX_FAST, FX_NORMAL, FX_SLOW, FX_TURTLE].join(' ');
 
         this.$tiles
             .add(this._$fakeFirstTile)
@@ -331,7 +331,7 @@ class SlotMachine {
      * @param string||boolean fade - Set fade gradient effect
      */
     set _animationFX (FX_SPEED) {
-        let delay = this.settings.delay / 4,
+        var delay = this.settings.delay / 4,
             $elements = this.$slot
                 .add(this.$tiles)
                 .add(this._$fakeFirstTile)
@@ -372,7 +372,7 @@ class SlotMachine {
      * @desc PRIVATE - Set css transition property
      */
     _changeTransition () {
-        let delay = this._delay || this.settings.delay,
+        var delay = this._delay || this.settings.delay,
             transition = this._transition || this.settings.transition;
         this.$container.css('transition', `${delay}s ${transition}`);
     }
@@ -407,10 +407,10 @@ class SlotMachine {
      * @param {Number} timeout - Timeout delay
      */
     raf (cb, timeout) {
-        let _raf = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame,
+        var _raf = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame,
             startTime = new Date().getTime(),
             _rafHandler = () => {
-                let drawStart = new Date().getTime(),
+                var drawStart = new Date().getTime(),
                     diff = drawStart - startTime;
 
                 if (diff < timeout) {
@@ -535,12 +535,12 @@ class SlotMachine {
         if (!this.visible && this.settings.stopHidden === true) {
             this.stop(onComplete);
         } else {
-            let delay = this.getDelayFromSpins(spins);
+            var delay = this.getDelayFromSpins(spins);
             this.delay = delay;
             this._animate(this.direction.to);
             this.raf(() => {
                 if (!this.stopping && this.running) {
-                    let left = spins - 1;
+                    var left = spins - 1;
 
                     this.resetPosition(this.direction.first);
                     if (left <= 1) {
@@ -584,7 +584,7 @@ class SlotMachine {
         this.active = this.futureActive;
 
         // Perform animation
-        let delay = this.getDelayFromSpins(1);
+        var delay = this.getDelayFromSpins(1);
         this.delay = delay;
         this._animationFX = FX_STOP;
         this._animate(this.getTileOffset(this.active));
@@ -656,9 +656,9 @@ $.fn[pluginName] = function initPlugin(options) {
     if (this.length === 1) {
         instances = _getInstance(this, options);
     } else {
-		let $els = this;
+		var $els = this;
         instances = $.map($els, (el, index) => {
-			let $el = $els.eq(index);
+			var $el = $els.eq(index);
             return _getInstance($el, options);
         });
     }
