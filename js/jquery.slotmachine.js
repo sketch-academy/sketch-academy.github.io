@@ -6,7 +6,6 @@
  * Released under the MIT license
  */
 (function init($, window, document, undefined) {
-"use strict";
 var pluginName = 'slotMachine',
     defaults = {
         active: 0, // Active element [Number]
@@ -219,10 +218,10 @@ class SlotMachine {
      * @return {Number} - Element index
      */
     get custom () {
-        let choosen;
+        var choosen;
 
         if (typeof this.settings.randomize === 'function') {
-            let index = this.settings.randomize.call(this, this.active);
+            var index = this.settings.randomize.call(this, this.active);
             if (index < 0 || index >= this.$tiles.length) {
                 index = 0;
             }
@@ -429,9 +428,9 @@ class SlotMachine {
      * @return {Number} - Negative offset in px
      */
     getTileOffset (index) {
-        let offset = 0;
+        var offset = 0;
 
-        for (let i = 0; i < index; i++) {
+        for (var i = 0; i < index; i++) {
             offset += this.$tiles.eq(i).outerHeight();
         }
 
@@ -491,7 +490,7 @@ class SlotMachine {
      * @return {Number} - Returns result index
      */
     getDelayFromSpins (spins) {
-        let delay = this.settings.delay;
+        var delay = this.settings.delay;
         this._transition = 'linear';
 
         switch (spins) {
@@ -638,7 +637,7 @@ class SlotMachine {
 * Create new plugin instance if needed and return it
 */
 function _getInstance(element, options) {
-    let machine;
+    var machine;
     if (!$.data(element[0], 'plugin_' + pluginName)) {
         machine = new SlotMachine(element, options);
         $.data(element[0], 'plugin_' + pluginName, machine);
@@ -652,7 +651,7 @@ function _getInstance(element, options) {
 * Chainable instance
 */
 $.fn[pluginName] = function initPlugin(options) {
-    let instances;
+    var instances;
     if (this.length === 1) {
         instances = _getInstance(this, options);
     } else {
