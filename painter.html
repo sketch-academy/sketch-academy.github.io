@@ -51,8 +51,8 @@
       var height = 768;
       var renderTexture = new GL.Texture(width, height);
 
-      var texture = GL.Texture.fromImage($('#brushImg')[0]);
-      var bgTexture = GL.Texture.fromImage($('#bgImg')[0]);
+      var texture = GL.Texture.fromURL('brush.png');
+      var bgTexture = GL.Texture.fromURL('paper_sketch.png');
 
       var vertElem = document.getElementById("vertex-shader");
       var fragElem = document.getElementById("fragment-shader");
