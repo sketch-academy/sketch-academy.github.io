@@ -12,7 +12,9 @@ app.use(express.static(path.join(__dirname)));
 app.get('/drawing', function (req, res) {
   res.sendFile(path.join(__dirname, '/drawing.html'));
 });
-
+app.get('/painter', function (req, res) {
+  res.sendFile(path.join(__dirname, '/painter.html'));
+});
 app.get('', function(req,res){
  res.sendfile(__dirname + '/index.html');
 }); 

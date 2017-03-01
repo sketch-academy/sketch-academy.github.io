@@ -1,5 +1,6 @@
 <html><body>
-      
+      <img id="brushImg" src="brush.png" style="display: none">
+      <img id="bgImg" src="paper_sketch.png"  style="display: none">
       <script src="ligthgl.js"></script>
       <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
       <!--
@@ -50,10 +51,8 @@
       var height = 768;
       var renderTexture = new GL.Texture(width, height);
 
-      //var texture = GL.Texture.fromImage($('#brushImg')[0]);
-      //var bgTexture = GL.Texture.fromImage($('#bgImg')[0]);
-      var texture = GL.Texture.fromURL('brush.png');
-      var bgTexture = GL.Texture.fromURL('paper_sketch.png');
+      var texture = GL.Texture.fromImage($('#brushImg')[0]);
+      var bgTexture = GL.Texture.fromImage($('#bgImg')[0]);
 
       var vertElem = document.getElementById("vertex-shader");
       var fragElem = document.getElementById("fragment-shader");
@@ -140,13 +139,13 @@
       }
       var renderScene = function()
       {
-          gl.viewport(0,0, width, height);
+          gl.viewport(width/2, height/2, width, height);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
           //gl.clearColor(1,0,1,1);
           //gl.loadIdentity();
           
 //          gl.loadMatrix(orthoMat);
-          gl.translate(0, 0, -2);
+          //gl.translate(0, 0, -2);
           
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -201,7 +200,7 @@
         var o2, x, y;
         x = e.offsetX;
         y = e.offsetY;
-        var pos = [x/width/2,1-y/height/2,0];
+        var pos = [x/width,1-y/height,0];
         //var pos = [Math.random(),Math.random(),0];
         //console.log(pos);
         drawStroke(pos);

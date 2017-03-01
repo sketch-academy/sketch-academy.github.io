@@ -333,7 +333,7 @@
       this.mouse.x = e.offsetX / this.canvas[0].width;
       this.mouse.y = 1.0 - (e.offsetY / this.canvas[0].height);
       this.render();
-      //return this.paintTextures();
+      return this.paintTextures();
     };
 
     MainCanvas.prototype.mouseover = function(e) {};
