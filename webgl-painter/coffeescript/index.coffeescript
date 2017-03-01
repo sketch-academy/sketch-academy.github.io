@@ -1,0 +1,356 @@
+
+
+class Pencil
+  constructor: ->
+    @radius = 0.025
+    @expoent = 1
+
+
+class GLBase
+  constructor: (@_canvas) ->
+    try
+      @gl = @_canvas.getContext("experimental-webgl") ||
+           @_canvas.getContext("webgl")
+    catch err
+      console.log err.message
+      alert err.message
+    
+    @mvMatrix = mat4.create()
+    @pMatrix = mat4.create()
+    @data = {}
+
+  initShaders: (fs,vs) ->
+    fragmentShader = @getShader fs
+    vertexShader = @getShader vs
+    
+    @shaderProgram = @gl.createProgram()
+    @gl.attachShader @shaderProgram, vertexShader
+    @gl.attachShader @shaderProgram, fragmentShader
+    @gl.linkProgram @shaderProgram
+    
+    if !@gl.getProgramParameter @shaderProgram, @gl.LINK_STATUS
+      console.log 'Não pode inicializar shaders!'
+    
+    @gl.useProgram @shaderProgram
+    
+    @data.vertexPositionAttribute = @gl.getAttribLocation @shaderProgram, "aVertexPosition"
+    @gl.enableVertexAttribArray @data.vertexPositionAttribute
+    #@data.vertexNormalsAttribute = gl.getAttribLocation @shaderProgram, "aVertexNormals"
+    #gl.enableVertexAttribArray @data.vertexNormalsAttribute
+    #@data.vertexColorAttribute = gl.getAttribLocation @shaderProgram, "aVertexColor"
+    #gl.enableVertexAttribArray @data.vertexColorAttribute
+    @data.textureCoordAttribute = @gl.getAttribLocation @shaderProgram, "aTextureCoord"
+    @gl.enableVertexAttribArray @data.textureCoordAttribute
+
+    @data.pMatrixUniform = @gl.getUniformLocation @shaderProgram, "uPMatrix"
+    @data.mvMatrixUniform = @gl.getUniformLocation @shaderProgram, "uMVMatrix"
+    @data.nMatrixUniform = @gl.getUniformLocation @shaderProgram, "uNMatrix"
+    #@data.ambientColorUniform = gl.getUniformLocation @shaderProgram, "uAmbientColor"
+    #@data.lightingDirectionUniform = gl.getUniformLocation @shaderProgram, "uLightingDirection"
+    #@data.directionalColorUniform = gl.getUniformLocation @shaderProgram, "uDirectionalColor"
+  
+  setMatrixUniforms: () ->
+    @gl.uniformMatrix4fv @data.pMatrixUniform, false, @pMatrix
+    @gl.uniformMatrix4fv @data.mvMatrixUniform, false, @mvMatrix
+    
+    normalMatrix = mat3.create()
+    mat4.toInverseMat3 @mvMatrix, normalMatrix
+    mat3.transpose normalMatrix
+    @gl.uniformMatrix3fv @data.nMatrixUniform, false, normalMatrix
+  
+  getShader: (id) ->
+    shaderScript = document.getElementById id
+    if shaderScript == null
+      return false
+    
+    str = ''
+    k = shaderScript.firstChild
+    while k
+      if k.nodeType == 3
+        str += k.textContent
+      k = k.nextSibling
+    
+    if shaderScript.type == "x-shader/x-fragment"
+      shader = @gl.createShader @gl.FRAGMENT_SHADER
+    else
+      shader = @gl.createShader @gl.VERTEX_SHADER
+    
+    @gl.shaderSource shader, str
+    @gl.compileShader shader
+    
+    if !@gl.getShaderParameter shader, @gl.COMPILE_STATUS
+      console.log @gl.getShaderInfoLog shader
+      return false
+    
+    shader
+  
+  initBuffers: () ->
+    @bufferPlane()
+ 
+  
+  bufferPlane: () ->
+    vertices = [ -1,-1,0, 1,-1,0, -1,1,0, 1,1,0 ]
+    buffer = @gl.createBuffer()
+    @gl.bindBuffer @gl.ARRAY_BUFFER, buffer
+    @gl.bufferData @gl.ARRAY_BUFFER, new Float32Array(vertices), @gl.STATIC_DRAW
+    buffer.itemSize = 3
+    buffer.numItems = 4
+    @data.vertexPositionBuffer = buffer
+    
+    normais = [ 0,0,1, 0,0,1, 0,0,1, 0,0,1 ]
+    buffer = @gl.createBuffer()
+    @gl.bindBuffer @gl.ARRAY_BUFFER, buffer
+    @gl.bufferData @gl.ARRAY_BUFFER, new Float32Array(normais), @gl.STATIC_DRAW
+    buffer.itemSize = 3
+    buffer.numItems = 4
+    @data.vertexNormalsBuffer = buffer
+    
+    colors = [ 1.0,1.0,1.0,1.0, 1.0,1.0,1.0,1.0, 1.0,1.0,1.0,1.0, 1.0,1.0,1.0,1.0 ]
+    buffer = @gl.createBuffer()
+    @gl.bindBuffer @gl.ARRAY_BUFFER, buffer
+    @gl.bufferData @gl.ARRAY_BUFFER, new Float32Array(colors), @gl.STATIC_DRAW
+    buffer.itemSize = 4
+    buffer.numItems = 4
+    @data.vertexColorBuffer = buffer
+    
+    uv = [ 0,0, 1,0, 0,1, 1,1 ]
+    buffer = @gl.createBuffer()
+    @gl.bindBuffer @gl.ARRAY_BUFFER, buffer
+    @gl.bufferData @gl.ARRAY_BUFFER, new Float32Array(uv), @gl.STATIC_DRAW
+    buffer.itemSize = 2
+    buffer.numItems = 4
+    @data.vertexTextureCoordBuffer = buffer
+    
+    indices = [ 0,1,2, 2,3,1 ]
+    buffer = @gl.createBuffer()
+    @gl.bindBuffer @gl.ELEMENT_ARRAY_BUFFER, buffer
+    @gl.bufferData @gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), @gl.STATIC_DRAW
+    buffer.itemSize = 1
+    buffer.numItems = 6
+    @data.vertexIndexBuffer = buffer
+  
+  handleTexture: (texture) ->
+    @gl.bindTexture @gl.TEXTURE_2D, texture
+    @gl.pixelStorei @gl.UNPACK_FLIP_Y_WEBGL, true
+    @gl.texImage2D @gl.TEXTURE_2D, 0, @gl.RGBA, @gl.RGBA, @gl.UNSIGNED_BYTE, texture.image #RGBA
+    #gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_MIN_FILTER, @gl.LINEAR
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_S, @gl.CLAMP_TO_EDGE
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_T, @gl.CLAMP_TO_EDGE
+    @gl.bindTexture @gl.TEXTURE_2D, null
+    
+    @scaled = Math.max @WIDTH / @image.width(), @HEIGHT / @image.height()
+    @scaled /= 2
+  
+  initImage: ->
+    @data.texture0 = @gl.createTexture()
+    @data.texture0.image = @image[0] # new Image()
+    @data.texture0.image.crossOrigin = ''
+    # carregada
+    if !@image[0].complete or @image[0].naturalWidth==undefined or @image[0].naturalWidth==0
+      @data.texture0.image.onload = (e) =>
+        @handleTexture @data.texture0
+    else
+      @handleTexture @data.texture0
+    
+    #@data.texture0.image.src = @image[0].src
+    #@data.texture0.image.src = document.getElementById('sampler0').src #document.getElementById('sampler0').firstChild.textContent
+
+class ColorCanvas extends GLBase
+  constructor: (canvas) ->
+    @color = document.createElement 'canvas'
+    @colorBuffer = document.createElement 'canvas'
+    @colorBuffer.width = @color.width = canvas.width
+    @colorBuffer.height = @color.height = canvas.height
+    @resetTextures()
+    
+    @gl.clearColor 0.8, 0.8, 0.8, 0.0
+    
+    
+    
+    
+    
+class MainCanvas extends GLBase
+  constructor: ->
+    @canvas = $('#screen')
+    super @canvas[0]
+    
+    @med = [0.5,0.5]
+    @scaled = 1
+    @pencil = new Pencil()
+    
+    @relief = document.createElement 'canvas'
+    @color = document.createElement 'canvas'
+    @colorBuffer = document.createElement 'canvas'
+    @normalBuffer = document.createElement 'canvas'
+    @colorBuffer.width = @normalBuffer.width = @relief.width = @color.width = @canvas[0].width
+    @colorBuffer.height = @normalBuffer.height = @relief.height = @color.height = @canvas[0].height
+    @resetTextures()
+    
+      
+    @gl.clearColor 0.8, 0.8, 0.8, 0.0
+    
+    @mouse = {x:.5,y:.5}
+    @uAmbientColor = [0.5,0.5,0.5,1.0]
+    @uLightingDirection = [0.5,0.5,-1.0]
+    @uDirectionalColor = [1,1,1,1.0]
+    
+    @initShaders 'shader-fs','shader-vs'
+    @customData()
+    @initBuffers()
+    #@initImages()
+    @initTextures()
+    
+    @render()
+    
+    #@canvas.mousemove @mousemove
+    #@canvas.mouseover(@mouseover).mouseout(@mouseout)
+    @canvas.mousedown @mousedown
+  
+  customData: ->
+    @data.colorBuffer = @gl.getUniformLocation @shaderProgram, "colorBuffer"
+    @data.reliefBuffer = @gl.getUniformLocation @shaderProgram, "reliefBuffer"
+    #@data.samplerUniform1 = gl.getUniformLocation @shaderProgram, "sampler1"
+    @data.medUniform = @gl.getUniformLocation @shaderProgram, "med"
+    @data.scaledUniform = @gl.getUniformLocation @shaderProgram, "scaled"
+    @data.radiusUniform = @gl.getUniformLocation @shaderProgram, "radius"
+    @data.expoentUniform = @gl.getUniformLocation @shaderProgram, "expoent"
+    
+    @data.mouse = @gl.getUniformLocation @shaderProgram, "mouse"
+    @data.tick = @gl.getUniformLocation @shaderProgram, "tick"
+  
+  initTextures: ->
+    @data.texture0 = @gl.createTexture()
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture0
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_MIN_FILTER, @gl.LINEAR
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_S, @gl.CLAMP_TO_EDGE
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_T, @gl.CLAMP_TO_EDGE
+    @gl.bindTexture @gl.TEXTURE_2D, null
+    
+    @data.texture1 = @gl.createTexture()
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture1
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_MIN_FILTER, @gl.LINEAR
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_S, @gl.CLAMP_TO_EDGE
+    @gl.texParameteri @gl.TEXTURE_2D, @gl.TEXTURE_WRAP_T, @gl.CLAMP_TO_EDGE
+    @gl.bindTexture @gl.TEXTURE_2D, null
+    
+    @updateTextures()
+    
+  updateTextures: ->
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture0
+    @gl.pixelStorei @gl.UNPACK_FLIP_Y_WEBGL, true
+    @gl.texImage2D @gl.TEXTURE_2D, 0, @gl.RGBA, @gl.RGBA, @gl.UNSIGNED_BYTE, @color
+    @gl.bindTexture @gl.TEXTURE_2D, null
+    
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture1
+    @gl.pixelStorei @gl.UNPACK_FLIP_Y_WEBGL, true
+    @gl.texImage2D @gl.TEXTURE_2D, 0, @gl.RGBA, @gl.RGBA, @gl.UNSIGNED_BYTE, @relief
+    @gl.bindTexture @gl.TEXTURE_2D, null
+  
+  
+  paintTextures: ->
+    
+    c0 = @color.getContext '2d'
+    c1 = @canvas[0].getContext '2d'
+    c0.clearRect 0,0, @color.width,@color.height
+    c0.drawImage @canvas[0],0,0
+    
+    
+    @updateTextures()
+    
+  
+  resetTextures: ->
+    cx = @color.getContext '2d'
+    cx.clearRect 0,0, @color.width, @color.height
+    cx = @relief.getContext '2d'
+    cx.fillStyle = "#8080ff"
+    cx.fillRect 0,0, @color.width, @color.height
+ 
+  render: (t) =>
+    @gl.viewport 0, 0, @canvas[0].width, @canvas[0].height
+    @gl.clear @gl.COLOR_BUFFER_BIT | @gl.DEPTH_BUFFER_BIT
+    
+    mat4.identity @pMatrix
+    mat4.identity @mvMatrix
+    
+    
+    # desenha
+    tk = t%1000 * .001 # tick / 1000
+    @gl.uniform1f @data.tick, tk
+    @gl.uniform2f @data.mouse, parseFloat(@mouse.x), parseFloat(@mouse.y)
+    @gl.uniform1f @data.scaledUniform, @scaled
+    @gl.uniform2f @data.medUniform, parseFloat(@med[0]), parseFloat(@med[1])
+    @gl.uniform1f @data.radiusUniform, @pencil.radius
+    @gl.uniform1f @data.expoentUniform, @pencil.expoent
+    
+    @gl.bindBuffer @gl.ARRAY_BUFFER, @data.vertexPositionBuffer
+    @gl.vertexAttribPointer @data.vertexPositionAttribute, @data.vertexPositionBuffer.itemSize, @gl.FLOAT, false, 0, 0
+    
+    @gl.bindBuffer @gl.ARRAY_BUFFER, @data.vertexTextureCoordBuffer
+    @gl.vertexAttribPointer @data.textureCoordAttribute, @data.vertexTextureCoordBuffer.itemSize, @gl.FLOAT, false, 0, 0
+    
+    @gl.activeTexture @gl.TEXTURE0
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture0
+    @gl.uniform1i @data.colorBuffer, 0
+    
+    @gl.activeTexture @gl.TEXTURE0+1
+    @gl.bindTexture @gl.TEXTURE_2D, @data.texture1
+    @gl.uniform1i @data.reliefBuffer, 1
+    
+    @gl.bindBuffer @gl.ELEMENT_ARRAY_BUFFER, @data.vertexIndexBuffer
+    @setMatrixUniforms()
+    @gl.drawElements @gl.TRIANGLES, @data.vertexIndexBuffer.numItems, @gl.UNSIGNED_SHORT, 0
+    
+    
+    #window.requestAnimFrame @render
+  
+  
+  mousedown: (e) =>
+    $(window).bind('mousemove',@mousemove).bind('mouseup',@mouseup)
+    
+    o2 = @canvas.offset()
+    @mouse.x = e.offsetX / @canvas[0].width
+    @mouse.y = 1.0 - (e.offsetY / @canvas[0].height)
+    @render()
+    @paintTextures()
+  
+  mouseup: (e) =>
+    $(window).unbind('mousemove',@mousemove).unbind('mouseup',@mouseup)
+    
+    o2 = @canvas.offset()
+    @mouse.x = e.offsetX / @canvas[0].width
+    @mouse.y = 1.0 - (e.offsetY / @canvas[0].height)
+    @render()
+    @paintTextures()
+  
+  mousemove: (e) =>
+    o2 = @canvas.offset()
+    x = e.offsetX + o2.left
+    y = e.offsetY + o2.top
+    @med[0] = e.offsetX / @canvas[0].width
+    @med[1] = 1.0 - (e.offsetY / @canvas[0].height)
+    @mouse.x = e.offsetX / @canvas[0].width
+    @mouse.y = 1.0 - (e.offsetY / @canvas[0].height)
+    @render()
+    @paintTextures()
+
+  
+  mouseover: (e) =>
+  
+  mouseout: (e) =>
+    
+    
+    
+window.requestAnimFrame =
+  window.requestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.oRequestAnimationFrame ||
+  window.msRequestAnimationFrame ||
+    (callback) ->
+      window.setTimeout callback, 40
+
+
+window.onload = (e) ->
+  console.clear()
+  mainCanvas = new MainCanvas()

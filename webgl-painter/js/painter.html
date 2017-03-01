@@ -1,0 +1,152 @@
+<html><body>
+      <script src="ligthgl.js"></script>
+      <!--
+      <script src="http://evanw.github.io/lightgl.js/lightgl.js"></script>-->
+      <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vertexPosition;
+        void main()
+        {
+            gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
+            gl_PointSize = 100.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
+            
+        }
+      </script>
+
+      <script id="fragment-shader" type="x-shader/x-fragment">
+        uniform sampler2D texture;
+        void main()
+        {
+          //gl_FragColor = vec4(0,0,0,1.0);
+          gl_FragColor = vec4(0,0,0,1.0) * texture2D(texture, gl_PointCoord);// - destColor;
+        }
+      </script>
+
+
+      <script>
+
+    var angle = 0;
+    var gl = GL.create({preserveDrawingBuffer: true,'alpha':true});
+    //var gl = GL.create(['alpha']);
+    var mesh = GL.Mesh.plane({ coords: true });
+    var shader = new GL.Shader('\
+      attribute vec3 vertexPosition;\
+      varying vec2 coord;\
+      void main() {\
+        coord = gl_TexCoord.xy;\
+        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
+      }\
+    ', '\
+      uniform sampler2D texture;\
+      varying vec2 coord;\
+      void main() {\
+        gl_FragColor = texture2D(texture, coord)*vec4(1,1,1,1);\
+      }\
+    ');
+    var renderTexture = new GL.Texture(1280, 768);
+    var texture = GL.Texture.fromURL('brush.png');
+    //var texture2 = GL.Texture.fromURL('brush.png');
+    var bgTexture = GL.Texture.fromURL('paper_sketch.png');
+
+    var vertElem = document.getElementById("vertex-shader");
+    var fragElem = document.getElementById("fragment-shader");
+    var vertexShader = new GL.Shader(vertElem.text,fragElem.text);
+
+    function changeBrush()
+    {
+      var brushSize = 1;
+      var brushColor = [0,0,0,1];
+      var MVP = new GL.Matrix();
+
+      texture.bind(3);
+      vertexShader.uniforms({MVP:MVP,brushColor:brushColor,brushSize:brushSize,texture:3});
+    }
+    //changeBrush();
+    /*
+    function PaintPoint(pos){
+      this.position = pos;//Vector
+      this.force = 1;//float
+      this.altitude = 0;//float
+      this.azimuth = GL.Vector(0,0);
+      this.velocity = 0;
+    }*/
+    gl.onupdate = function(seconds) {
+      angle += 45 * seconds;
+    };
+    gl.fullscreen();
+
+    function drawStroke(tt)
+    {
+      renderTexture.drawTo(function() {
+        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        //gl.clearColor(1,1,1,1);
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.loadIdentity();
+        gl.translate(0, 0, -1);
+        
+        texture.bind(1);
+        //vertexBuffers = [];
+        var positionBuffer = [];
+        for(var i=0;i<100;i++)
+        {
+          //vertexBuffers.push(new PaintPoint(new GL.Vector(i,i)));
+          positionBuffer.push(i);
+        }
+        var vertices = new GL.Buffer(gl.ARRAY_BUFFER, Float32Array);
+        vertices.data = [[tt, 0, 0,1], [1, 0, 0,1], [0, 1, 0,1], [1, 1, 0,1]];
+        vertices.compile();
+        var vertexBuffers = {'vertexPosition':vertices};
+        vertexShader.drawBuffers(vertexBuffers, null, gl.POINTS);
+        vertexShader.uniforms({texture: 1})
+      });
+      gl.ondraw();
+    }
+    function clearCanvas()
+    {
+        renderTexture.drawTo(function() {
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.clearColor(1,1,1,1);
+        });
+        renderScene();
+    }
+    function renderScene()
+    {
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        //gl.clearColor(1,0,1,1);
+        gl.loadIdentity();
+        gl.translate(0, 0, -2);
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+        //drawBG();
+        drawRenderTexture();
+    }
+
+    function drawRenderTexture()
+    {
+      renderTexture.bind(1);
+        shader.uniforms({
+          renderTexture: 1
+        }).draw(mesh);
+    }
+    
+    function drawBG()
+    {
+      bgTexture.bind(0);
+      shader.uniforms({
+          renderTexture: 0
+      }).draw(mesh);
+    }
+    
+    gl.ondraw = function() {
+      renderScene();
+    };
+    //clearCanvas();
+    // drawCanvas(0);
+    
+    
+    
+    //gl.animate();
+
+      </script>
+    </body></html>
