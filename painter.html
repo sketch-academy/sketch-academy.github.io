@@ -1,64 +1,86 @@
 <html><body>
       <img id="brushImg" src="brush.png" style="display: none">
       <img id="bgImg" src="paper_sketch.png"  style="display: none">
+       <object id="wtPlugin" type="application/x-wacomtabletplugin">
+          <param name="onload" value="pluginLoaded" />
+      </object>
+
       <script src="ligthgl.js"></script>
       <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-      <!--
-      <script src="http://evanw.github.io/lightgl.js/lightgl.js"></script>-->
-      <script id="vertex-shader" type="x-shader/x-vertex">
+      <script id="vertex-brush" type="x-shader/x-vertex">
         attribute vec4 vertexPosition;
         uniform mat4 mvp;
         void main()
         {
-            gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
+            //gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
+            gl_Position = mvp * vertexPosition;
             gl_PointSize = 10.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
         }
       </script>
 
-      <script id="fragment-shader" type="x-shader/x-fragment">
+      <script id="fragment-brush" type="x-shader/x-fragment">
         uniform sampler2D texture;
         void main()
         {
           //gl_FragColor = vec4(0,0,0,1.0);
-          gl_FragColor = vec4(0,0,0,1.0) * texture2D(texture, gl_PointCoord);// - destColor;
+          gl_FragColor = vec4(0,0,0,0.2) * texture2D(texture, gl_PointCoord);// - destColor;
         }
       </script>
 
+    <script id="vertex-renderTexture" type="x-shader/x-vertex">
+    attribute vec3 vertexPosition;
+    varying vec2 coord;
+    uniform mat4 mvp;
+    void main(){
+    coord = gl_TexCoord.xy;
+    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    //gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
+    //gl_Position = mvp * gl_Vertex;
+    }
+    </script>
 
+    <script id="fragment-renderTexture" type="x-shader/x-fragment">
+    uniform sampler2D texture;
+    varying vec2 coord;
+    void main(){
+    gl_FragColor = texture2D(texture, coord)*vec4(1,1,1,1);
+    }
+    </script>
       <script>
+        
       $('#document').ready(function()
       {
+        //document.body.style.zoom="100%";
       var angle = 0;
       var gl = GL.create({preserveDrawingBuffer: true,'alpha':true});
-      //var gl = GL.create(['alpha']);
+      //gl.fullscreen({ camera: false,paddingLeft: 10, paddingBottom: 10,paddingTop:10,paddingRight:10 });
+      
+      document.body.appendChild(gl.canvas);
+      document.body.style.overflow = 'hidden';
+      
+      
+      var width = gl.canvas.width;
+      var height = gl.canvas.height;
+      console.log(width);
+      console.log(height);
       var mesh = GL.Mesh.plane({ coords: true });
-      var shader = new GL.Shader('\
-        attribute vec3 vertexPosition;\
-        varying vec2 coord;\
-        uniform mat4 mvp;\
-        void main() {\
-          coord = gl_TexCoord.xy;\
-          gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\
-        }\
-      ', '\
-        uniform sampler2D texture;\
-        varying vec2 coord;\
-        void main() {\
-          gl_FragColor = texture2D(texture, coord)*vec4(1,1,1,1);\
-        }\
-      ');
-      var width = 1280;
-      var height = 768;
+      //
+      mesh.vertices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
       var renderTexture = new GL.Texture(width, height);
 
       var texture = GL.Texture.fromURL('brush.png');
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
 
-      var vertElem = document.getElementById("vertex-shader");
-      var fragElem = document.getElementById("fragment-shader");
-      var vertexShader = new GL.Shader(vertElem.text,fragElem.text);
-      //var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
-      var mvp = GL.Matrix.translate(0,0,-2);
+      var vertBrush = document.getElementById("vertex-brush");
+      var fragBrush = document.getElementById("fragment-brush");
+      
+      var vertRenderTexture = document.getElementById("vertex-renderTexture");
+      var fragRenderTexture = document.getElementById("fragment-renderTexture");
+      var vertexShader = new GL.Shader(vertBrush.text,fragBrush.text);
+      var shader = new GL.Shader(vertRenderTexture.text,fragRenderTexture.text);
+      var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
+
+      //var mvp = GL.Matrix.translate(0,0,-2);
       //changeBrush();
       /*
       function PaintPoint(pos){
@@ -71,8 +93,9 @@
       gl.onupdate = function(seconds) {
         angle += 45 * seconds;
       };
-      gl.fullscreen();
-
+      gl.scale(2,2,2);
+      
+      //gl.fullscreen({ fov: 45, near: 0.1, far: 1000 });
       function drawStroke(pos)
       {
         texture.bind(0);
@@ -139,20 +162,32 @@
       }
       var renderScene = function()
       {
-          gl.viewport(width/2, height/2, width, height);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          //gl.clearColor(1,0,1,1);
-          //gl.loadIdentity();
-          
-//          gl.loadMatrix(orthoMat);
-          //gl.translate(0, 0, -2);
-          
+          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);          
           gl.enable(gl.BLEND);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
           drawBG();
           drawRenderTexture();
+          //scissorTest();
+
           //drawTest();
+      }
+      var scissorTest = function()
+      {
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    
+        // Draw a 1 pixel border around the edge using 
+        // the scissor test since it's easier than setting up
+        // a lot of stuff
+        gl.clearColor(1, 0, 0, 1);  // red
+        gl.disable(gl.SCISSOR_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+          
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(1, 1, gl.canvas.width - 2, gl.canvas.height - 2);
+        gl.clearColor(0, 0, 1, 1);  // blue
+        gl.clear(gl.COLOR_BUFFER_BIT);
       }
       var drawTest = function()
       {
@@ -171,7 +206,6 @@
           renderTexture.unbind(0);
       }
 
-      
       function drawBG()
       {
           bgTexture.bind(0);
@@ -180,7 +214,6 @@
           }).draw(mesh);
           bgTexture.unbind(0);
       }
-
       var x = 0;
       
       gl.ondraw = function() {
@@ -200,22 +233,29 @@
         var o2, x, y;
         x = e.offsetX;
         y = e.offsetY;
-        var pos = [x/width,1-y/height,0];
-        //var pos = [Math.random(),Math.random(),0];
-        //console.log(pos);
+        //console.log(e.offsetX);
+        //console.log(e.offsetY);
+        //var pos = [(x-width/2)/width,1-(height/2-y)/height,0];
+        var w = width;
+        var h = height;
+        //var pos = [(e.offsetX-w/2)/w,-(e.offsetY-h/2)/h,0];
+        var pos = [x,height-y];
+        //console.log(gl.canvas.width);
+        //console.log(gl.canvas.height);
+        //var pos = [Math.random()-0.5,Math.random()-0.5,0];
         drawStroke(pos);
         lastPos = pos;
       }
-    /*
-    var glcanvas;
-    $('#document').ready(function()
-    {
-      glcanvas = new GLCanvas();
-       
-      glcanvas.renderScene();
+        /*
+        var glcanvas;
+        $('#document').ready(function()
+        {
+          glcanvas = new GLCanvas();
+          
+          glcanvas.renderScene();
 
-    })*/
-    //gl.animate();
+        })*/
+        //gl.animate();
       });
       </script>
     </body></html>
