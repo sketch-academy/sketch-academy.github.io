@@ -178,7 +178,6 @@ $('#document').ready(function()
       }
       function readPixels()
       {
-        
         var pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
         gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
         console.log(pixels); // Uint8Array
@@ -242,23 +241,32 @@ $('#document').ready(function()
         x = e.offsetX;
         y = height-e.offsetY;
         lastPos = new GL.Vector(x,y);
-       
+       currentColor = palatteColor;
       });
       $(window).bind('mouseup',function(e){
         isMouseDown = false;
         lastPos = null;
          dir = null;
+         currentColor = null;
+         console.log("up");
       });
       $(window).bind('mousemove', mousemove);
       function mousemove(e){
         if(!isMouseDown)
           return;
-
+        
            
         var plugin = document.getElementById('wtPlugin');
-        force = plugin.penAPI.pressure;
-        if(force==0)
+        if(plugin.penAPI!=undefined)
+        {
+          console.log(plugin.penAPI);
+          force = plugin.penAPI.pressure;
+          if(force==0)
+            force = 1;
+        }
+        else
           force = 1;
+        
           
         var o2, x, y;
         x = e.offsetX;
@@ -266,9 +274,7 @@ $('#document').ready(function()
         var w = width;
         var h = height;
         var pos = new GL.Vector(x,y);
-        
-
-
+      
         var canvasColor = readPixel(x,y);
         //color = palatteColor;
         
@@ -278,10 +284,7 @@ $('#document').ready(function()
         }
         else
         {
-        //  console.log(palatteColor);
-        
           currentColor = blendColor(palatteColor,currentColor,canvasColor,0.5);
-          
           //console.log(color);
         }
          
@@ -294,6 +297,7 @@ $('#document').ready(function()
           else
             dir = newDir;
          // console.log(dir);
+         console.log(dir);
           drawStroke(pos);
         }
       }
