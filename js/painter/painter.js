@@ -1,8 +1,9 @@
+var gl;
 $('#document').ready(function()
       {
         //document.body.style.zoom="100%";
       var angle = 0;
-      var gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
+      gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
       //'alpha':true, 
       
       document.body.appendChild(gl.canvas);
@@ -30,7 +31,8 @@ $('#document').ready(function()
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       var texture = GL.Texture.fromURL('brush.png',{format:gl.RGBA});
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
-
+      var strokeRenderer = new GLStrokeRenderer();
+      strokeRenderer.setBrushTexture(texture);
       var vertBrush = document.getElementById("vertex-brush");
       var fragBrush = document.getElementById("fragment-brush");
       
@@ -69,15 +71,13 @@ $('#document').ready(function()
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
           gl.loadIdentity();
           gl.translate(0, 0, -1);
-          
-          var vertices = new GL.Buffer(gl.ARRAY_BUFFER, Float32Array);
           var pts = interpolatePoints(lastPos,pos);
           if(pts ==null)
           return;
           lastPos = pos;
-          vertices.data = vertices.data.concat(pts);
 
-          //console.log(vertices.data);
+          var vertices = new GL.Buffer(gl.ARRAY_BUFFER, Float32Array);
+          vertices.data = vertices.data.concat(pts);
           vertices.compile();
           
           var vertexBuffers = {'vertexPosition':vertices};
@@ -89,6 +89,10 @@ $('#document').ready(function()
         //gl.ondraw();
         renderScene();
       }
+
+     
+
+
       function interpolatePoints(sp,ep)
       {
         //var returnObj = new Object;
@@ -236,14 +240,13 @@ $('#document').ready(function()
         isMouseDown = true;
         x = e.offsetX;
         y = height-e.offsetY;
-        var w = width;
-        var h = height;
         lastPos = new GL.Vector(x,y);
-        
+       
       });
       $(window).bind('mouseup',function(e){
         isMouseDown = false;
         lastPos = null;
+         dir = null;
       });
       $(window).bind('mousemove', mousemove);
       function mousemove(e){
