@@ -1,11 +1,11 @@
 <html>
   <body>
-      <img id="brushImg" src="brush.png" style="display: none">
+      <img id="brushImg" src="img/brush/flat.png" style="display: none">
       <img id="bgImg" src="paper_sketch.png"  style="display: none">
-      <!--
+      
       <object id="wtPlugin" type="application/x-wacomtabletplugin">
           <param name="onload" value="pluginLoaded" />
-      </object>-->
+      </object>
       <input id="color-picker" type="color" name="" value="#FF0000">
     </body>
 <!--shader-->
@@ -15,7 +15,8 @@
        #define M_PI 3.141592
         #define M_PI_2 1.570796
         attribute vec4 vertexPosition;
-        attribute vec4 force;
+        //attribute vec4 force;
+        uniform float force;
         uniform vec2 velocity;
         uniform mat4 mvp;
         
@@ -26,7 +27,7 @@
             //gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
             angle = atan(velocity.x,velocity.y)+M_PI_2;
             gl_Position = mvp * vertexPosition;
-            gl_PointSize = 20.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
+            gl_PointSize = force* 20.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
         }
       </script>
 

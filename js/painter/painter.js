@@ -29,7 +29,7 @@ $('#document').ready(function()
       mesh.vertices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
       var renderTexture = new GL.Texture(width, height);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-      var texture = GL.Texture.fromURL('brush.png',{format:gl.RGBA});
+      var texture = GL.Texture.fromURL('img/brush/flat.png',{format:gl.RGBA});
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
       var strokeRenderer = new GLStrokeRenderer();
       strokeRenderer.setBrushTexture(texture);
@@ -58,6 +58,7 @@ $('#document').ready(function()
       gl.scale(2,2,2);
       
       var startPos;
+      var force = 0;
       //gl.fullscreen({ fov: 45, near: 0.1, far: 1000 });
       function drawStroke(pos)
       {
@@ -82,7 +83,7 @@ $('#document').ready(function()
           
           var vertexBuffers = {'vertexPosition':vertices};
           vertexShader.drawBuffers(vertexBuffers, null, gl.POINTS);
-          vertexShader.uniforms({'canvas':1,'texture': 0,'mvp':mvp,'color':currentColor,'velocity':[dir.x,dir.y]});
+          vertexShader.uniforms({'canvas':1,'texture': 0,'mvp':mvp,'color':currentColor,'velocity':[dir.x,dir.y],'force':force});
 
         });
         texture.unbind(0);
@@ -252,6 +253,13 @@ $('#document').ready(function()
       function mousemove(e){
         if(!isMouseDown)
           return;
+
+           
+        var plugin = document.getElementById('wtPlugin');
+        force = plugin.penAPI.pressure;
+        if(force==0)
+          force = 1;
+          
         var o2, x, y;
         x = e.offsetX;
         y = height-e.offsetY;
