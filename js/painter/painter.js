@@ -100,7 +100,8 @@ $('#document').ready(function(){
           renderScene();
       }
       var canvasScale = 1;
-      var disx=1,disy = 1;
+      var disx=0,disy = 0;
+      var pivotx = 0,pivoty = 0;
       var renderScene = function()
       {
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -110,9 +111,10 @@ $('#document').ready(function(){
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
           gl.loadIdentity();
-          gl.translate(-disx,-disy,0);
-          gl.scale(canvasScale,canvasScale,canvasScale);
-          gl.translate(disx,disy, 0);
+          gl.translate(disx,disy, 0);//移到pivot
+          gl.scale(canvasScale,canvasScale,canvasScale);//scale, 放大pivot的移動
+          gl.translate(-disx,-disy,0);//修正
+          
           drawBG();
           drawRenderTexture();
           //drawTest();
@@ -255,27 +257,50 @@ $('#document').ready(function(){
       var lastPoint;
       var scroll = 100;
       var canZoom = true;
-
+      var lastPivotX = 0;
+      var lastPivotY = 0;
+      var oldCanvasPosX = 0;
+      var oldCanvasPosY = 0;
+      var canvasPosX = 0;
+      var canvasPosY = 0;
       $(gl.canvas).mousewheel(function(e)
       {
+        pivotx = e.offsetX*2/width-1;
+        pivoty = -(e.offsetY*2/height-1);
+        if(lastPivotX!=pivotx)
+        {
+          lastPivotX = pivotx;
+          lastPivotY = pivoty;
+        }
+        
+        canvasPosX = -(pivotx-oldCanvasPosX)*canvasScale+(pivotx-oldCanvasPosX);
+        canvasPosY = -(pivoty-oldCanvasPosY)*canvasScale+(pivoty-oldCanvasPosY);
+        oldCanvasPosX = canvasPosX;
+        oldCanvasPosY = canvasPosY;
+
+        
+
+        //disx = pivotx-canvasPosX;
+        //disy = pivoty-canvasPosY;
+        
+
         scroll-=e.deltaY;
         if(scroll<10)
           scroll = 10;
         //console.log(e.clientX);
-        console.log(e);
+        console.log(canvasPosX);
+        console.log(canvasPosY);
         if(scroll>=10)
         { 
           canvasScale = scroll/100;
-          //disx = -(e.offsetX/width-0.5);
-          //disy = e.offsetY/height-0.5;
+          //disx = (pivotx/width-0.5)*2;
+          //disy = -(pivoty/height-0.5)*2;
 
           //disx = (e.offsetX/width-0.5);
           //disy = -(e.offsetY/height-0.5);
           //disx = canvasScale*(e.offsetX/width-0.5);
           //disy = -canvasScale*(e.offsetY/height-0.5);
 
-          console.log(disx);
-          console.log(disy);
           renderScene();
         }
         
