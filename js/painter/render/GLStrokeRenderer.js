@@ -44,6 +44,28 @@ var GLStrokeRenderer = function(brushTexture,canvasTexture,mvp,shader){
         this.vertexShader.drawBuffers(this.vertexBuffers, null, gl.POINTS);
         this.vertexShader.uniforms(this.uniforms);
     };
+    this.setBlendFunction = function(type)
+    {
+        gl.enable(gl.BLEND);
+        
+        console.log(type);
+        if(type=="eraser")
+        {
+            console.log("eraser");
+            //eraser
+            gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT);
+            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.blendFunc(gl.ONE_MINUS_SRC_ALPHA, gl.ONE);
+        }
+        else
+        {
+            //pen
+            gl.blendEquation(gl.FUNC_ADD);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        }
+        gl.loadIdentity();
+        gl.translate(0, 0, -1);
+    }
 }
 GLStrokeRenderer.prototype.setBrushTexture = function (t)
 {
@@ -54,7 +76,7 @@ GLStrokeRenderer.prototype.setCanvasTexture = function(t)
     this.canvasTexture = t;
 };
 
-GLStrokeRenderer.prototype.drawStroke = function(lastPoint,point)
+GLStrokeRenderer.prototype.drawStroke = function(lastPoint,point,type)
 {
     var renderer = this;
     var pointData = PaintPoint.interpolate(lastPoint,point);
@@ -63,11 +85,9 @@ GLStrokeRenderer.prototype.drawStroke = function(lastPoint,point)
         return false;
     }
     this.canvasTexture.drawTo(function() {
-        gl.enable(gl.BLEND);
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.loadIdentity();
-        gl.translate(0, 0, -1);
+        gl.scale(2,2,2);
+        renderer.setBlendFunction(type);
         renderer.bindStrokeShader(pointData);
     });
     this.brushTexture.unbind(0);

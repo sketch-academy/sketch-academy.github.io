@@ -1,5 +1,6 @@
 <html>
   <body>
+      <div id="canvas-area"></div>
       <img id="brushImg" src="img/brush/flat.png" style="display: none">
       <img id="bgImg" src="paper_sketch.png"  style="display: none">
       
@@ -7,6 +8,10 @@
           <param name="onload" value="pluginLoaded" />
       </object>
       <input id="color-picker" type="color" name="" value="#FF0000">
+      <button id="brush-btn">brush</button>
+      <button id="eraser-btn">eraser</button>
+      <button id="zoomin-btn">+</button>
+      <button id="zoomout-btn">-</button>
     </body>
 <!--shader-->
 
@@ -27,8 +32,8 @@
             //gl_Position = gl_ModelViewProjectionMatrix * vertexPosition;
             angle = atan(velocity.x,velocity.y)+M_PI_2;
             gl_Position = mvp * vertexPosition;
-            gl_PointSize = force* 20.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
-            fragmentColor = color*0.1;
+            gl_PointSize = force* 40.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
+            fragmentColor = color;
         }
       </script>
 
@@ -67,6 +72,8 @@
     gl_FragColor = texture2D(texture, coord)*vec4(1,1,1,1);
     }
     </script>
+    <script src="js/painter/jquery.mousewheel.min.js"></script>
+    <script src="js/painter/zoom.js"></script>
     <script src="js/painter/stroke/PaintPoint.js"></script>
     <script src="js/painter/render/GLStrokeRenderer.js"></script>
      <script src="js/painter/painter.js"></script>

@@ -3,9 +3,37 @@
 var gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
 $('#document').ready(function(){
       // document.body.style.zoom="100%";
-      
+      console.log($('#eraser-btn'));
+      $('#eraser-btn').click(function(){
+        console.log("clicked");
+        brushType = "eraser";
+      });
+      $('#brush-btn').click(function()
+      {
+        brushType = "brush";
+      })
+      var zoomScale= 1;
+      $('#zoomin-btn').click(function()
+      {
+        zoom.to({
+          x: 500,
+          y: 500,
+          scale: zoomScale+=0.1
+        });
+      })
+      $('#zoomout-btn').click(function()
+      {
+        zoom.to({
+          x: 500,
+          y: 500,
+          scale: zoomScale-=0.1,
+          pan:false
+        });
+      })
+
+
       //'alpha':true, 
-      document.body.appendChild(gl.canvas);
+      $('#canvas-area').append(gl.canvas);
       document.body.style.overflow = 'hidden';
       
       var palatteColor  = [1.0,0.0,0.0,1.0];
@@ -55,68 +83,14 @@ $('#document').ready(function(){
         angle += 45 * seconds;
       };
 
-      gl.scale(2,2,2);
+      //gl.scale(2,2,2);
       
       var startPos;
       var force = 0;
       //gl.fullscreen({ fov: 45, near: 0.1, far: 1000 });
       
-      function drawStroke(pos)
-      {
-        texture.bind(0);
-        renderTexture.bind(1);
-        renderTexture.drawTo(function() {
-          //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          //gl.clearColor(1,1,1,1);
-          gl.enable(gl.BLEND);
-          gl.blendEquation(gl.FUNC_ADD);
-          gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-          gl.loadIdentity();
-          gl.translate(0, 0, -1);
-          var pts = interpolatePoints(lastPos,pos);
-          if(pts ==null)
-          return;
-          lastPos = pos;
-
-          var vertices = new GL.Buffer(gl.ARRAY_BUFFER, Float32Array);
-          vertices.data = vertices.data.concat(pts);
-          vertices.compile();
-          
-          var vertexBuffers = {'vertexPosition':vertices};
-          vertexShader.drawBuffers(vertexBuffers, null, gl.POINTS);
-          vertexShader.uniforms({'canvas':1,'texture': 0,'mvp':mvp,'color':currentColor,'velocity':[dir.x,dir.y],'force':force});
-
-        });
-        texture.unbind(0);
-        //gl.ondraw();
-        renderScene();
-      }
-      function interpolatePoints(sp, ep)
-      {
-        //var returnObj = new Object;
-        var points = [];
-        var size = 1;
-        var kBrushPixelStep = size*3;
-        var dis = ep.subtract(sp).length();
-        //console.log(dis);
-        var pnum = Math.ceil(dis / kBrushPixelStep);
-        //console.log(pnum);
-        if(pnum<kBrushPixelStep)
-        return null;
-        var count = pnum;
-        //console.log(count);
-        
-        for(var i =0;i<=count;i+=0.1)
-        {
-          var v = GL.Vector.lerp(sp,ep,i/count);
-          points.push([v.x,v.y,v.z,1]);
-          
-        }
-
-        //returnObj.positions = points;
-        //returnObj.velocities = 
-        return points;
-      }
+      
+      
       var clearCanvas = function()
       {
           renderTexture.drawTo(function() {
@@ -125,6 +99,8 @@ $('#document').ready(function(){
           });
           renderScene();
       }
+      var canvasScale = 1;
+      var disx=1,disy = 1;
       var renderScene = function()
       {
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -133,21 +109,18 @@ $('#document').ready(function(){
           gl.blendEquation(gl.FUNC_ADD);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
+          gl.loadIdentity();
+          gl.translate(-disx,-disy,0);
+          gl.scale(canvasScale,canvasScale,canvasScale);
+          gl.translate(disx,disy, 0);
           drawBG();
           drawRenderTexture();
           //drawTest();
       }
-      
-      var drawTest = function()
-      {
-          texture.bind(0);
-          shader.uniforms({
-            'renderTexture':0,'mvp':mvp
-          }).draw(mesh);
-          texture.unbind(0);
-      }
+
       var drawRenderTexture = function()
       {
+        
           renderTexture.bind(0);
           shader.uniforms({
             'renderTexture':0,'mvp':mvp
@@ -254,11 +227,12 @@ $('#document').ready(function(){
       var pos; 
       var lastPos; 
       var dir;
-
+      var brushType = "brush";
       var isMouseDown = false;
       var isPen = false;
       var plugin = document.getElementById('wtPlugin');
-      $(window).bind('mousedown',function(e){
+
+      $(gl.canvas).bind('mousedown',function(e){
         isMouseDown = true;
         x = e.offsetX;
         y = height-e.offsetY;
@@ -277,19 +251,45 @@ $('#document').ready(function(){
        //draw single dot
 
       });
-      $(window).bind('mouseup',function(e){
+      
+      var lastPoint;
+      var scroll = 100;
+      var canZoom = true;
+
+      $(gl.canvas).mousewheel(function(e)
+      {
+        scroll-=e.deltaY;
+        if(scroll<10)
+          scroll = 10;
+        //console.log(e.clientX);
+        console.log(e);
+        if(scroll>=10)
+        { 
+          canvasScale = scroll/100;
+          //disx = -(e.offsetX/width-0.5);
+          //disy = e.offsetY/height-0.5;
+
+          //disx = (e.offsetX/width-0.5);
+          //disy = -(e.offsetY/height-0.5);
+          //disx = canvasScale*(e.offsetX/width-0.5);
+          //disy = -canvasScale*(e.offsetY/height-0.5);
+
+          console.log(disx);
+          console.log(disy);
+          renderScene();
+        }
+        
+      });
+      $(gl.canvas).bind('mouseup',function(e){
         isMouseDown = false;
         lastPoint = null;
          dir = null;
          currentColor = null;
       });
-      var lastPoint;
-      $(window).bind('mousemove', mousemove);
+      $(gl.canvas).bind('mousemove', mousemove);
       function mousemove(e){
         if(!isMouseDown)
           return;
-        
-           
         
       
         if(isPen)
@@ -298,22 +298,19 @@ $('#document').ready(function(){
           {
               var api = plugin.penAPI;
               force = api.pressure;
-            
           }
         }
-        
         else
           force = 1;
-        
           
         var x, y;
         x = e.offsetX;
         y = height-e.offsetY;
-        var pos = new GL.Vector(x,y);
+        var pos = new GL.Vector((x-width/2*(1+disx))/canvasScale+width/2,(y-height/2*(1+disy))/canvasScale+height/2);
+        //console.log(pos);
       
         var canvasColor = readPixel(x,y);
         //color = palatteColor;
-        
         if(currentColor==null)
         {
           currentColor = palatteColor;
@@ -330,15 +327,22 @@ $('#document').ready(function(){
             dir = newDir;
          
           //drawStroke(pos);
+          
+          for(var i=0;i<4;i++)
+          {
+            currentColor[i]*=0.1;  
+          }
+          
           var point = new PaintPoint(pos,currentColor,force,dir);
           //var lastPoint = new PaintPoint(lastPos,force,dir);
-          if(strokeRenderer.drawStroke(lastPoint,point))
+          if(strokeRenderer.drawStroke(lastPoint,point,brushType))
           {
             renderScene();
             lastPos = pos;
             lastPoint = point;
-          }
+          } 
         }
+        
       }
       
         /*

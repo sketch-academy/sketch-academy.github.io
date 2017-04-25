@@ -6,19 +6,25 @@ var PaintPoint = function(position,color,force,velocity)
     this.color = color;
     this.velocity = velocity;
 }
-
+PaintPoint.interpolate = function()
+{
+    Bezier.quadraticFromPoints(p1,p2,p3,t)
+}
 //return null if p1 and p2 too close
 PaintPoint.interpolate = function(p1,p2)
 {
+
+    
     var positions = [];
     var forces = [];
     var velocities = [];
     var colors = [];
     var size = 1;
+    //TODO - size should be dinamic
     var kBrushPixelStep = size*3;
     var dis = p1.position.subtract(p2.position).length();
     var pnum = Math.ceil(dis / kBrushPixelStep);
-    if(pnum<kBrushPixelStep)
+    if(pnum<1)
     return null;
     var count = pnum;
     if(p1.velocity==null)
