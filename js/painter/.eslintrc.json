@@ -1,0 +1,16 @@
+{
+    "extends": "eslint:recommended",
+    "no-undef": 1,
+    "no-unused-vars": 1,
+    "env": {
+        "browser": true,
+        "jquery": true,
+        "es6": true
+    },
+    "globals": {
+        "GL": false,
+        "gl": false,
+        "GLStrokeRenderer":false,
+        "PaintPoint":false
+    }
+}

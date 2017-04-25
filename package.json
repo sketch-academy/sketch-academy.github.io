@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/sketch-academy/sketch-academy.github.io/issues"
   },
-  "homepage": "https://github.com/sketch-academy/sketch-academy.github.io#readme"
+  "homepage": "https://github.com/sketch-academy/sketch-academy.github.io#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
+  }
 }

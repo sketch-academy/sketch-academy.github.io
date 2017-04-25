@@ -1,15 +1,13 @@
-var gl;
-$('#document').ready(function()
-      {
-        //document.body.style.zoom="100%";
-      var angle = 0;
-      gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
-      //'alpha':true, 
+/// <reference path="lightgl.js" />
+/// <reference path="stroke/GLStrokeRenderer.js" />
+var gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
+$('#document').ready(function(){
+      // document.body.style.zoom="100%";
       
+      //'alpha':true, 
       document.body.appendChild(gl.canvas);
       document.body.style.overflow = 'hidden';
       
-      var color;
       var palatteColor  = [1.0,0.0,0.0,1.0];
       var currentColor;
       $('#color-picker').change(function()
@@ -22,17 +20,16 @@ $('#document').ready(function()
       
       var width = gl.canvas.width;
       var height = gl.canvas.height;
-      console.log(width);
-      console.log(height);
       var mesh = GL.Mesh.plane({ coords: true });
-      //
-      mesh.vertices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
+      var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
+
+      mesh.verteices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
       var renderTexture = new GL.Texture(width, height);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       var texture = GL.Texture.fromURL('img/brush/flat.png',{format:gl.RGBA});
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
-      var strokeRenderer = new GLStrokeRenderer();
-      strokeRenderer.setBrushTexture(texture);
+      
+      
       var vertBrush = document.getElementById("vertex-brush");
       var fragBrush = document.getElementById("fragment-brush");
       
@@ -40,7 +37,7 @@ $('#document').ready(function()
       var fragRenderTexture = document.getElementById("fragment-renderTexture");
       var vertexShader = new GL.Shader(vertBrush.text,fragBrush.text);
       var shader = new GL.Shader(vertRenderTexture.text,fragRenderTexture.text);
-      var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
+      var strokeRenderer = new GLStrokeRenderer(texture,renderTexture,mvp,vertexShader);
 
       //var mvp = GL.Matrix.translate(0,0,-2);
       //changeBrush();
@@ -52,14 +49,18 @@ $('#document').ready(function()
         this.azimuth = GL.Vector(0,0);
         this.velocity = 0;
       }*/
+
+      var angle;
       gl.onupdate = function(seconds) {
         angle += 45 * seconds;
       };
+
       gl.scale(2,2,2);
       
       var startPos;
       var force = 0;
       //gl.fullscreen({ fov: 45, near: 0.1, far: 1000 });
+      
       function drawStroke(pos)
       {
         texture.bind(0);
@@ -90,11 +91,7 @@ $('#document').ready(function()
         //gl.ondraw();
         renderScene();
       }
-
-     
-
-
-      function interpolatePoints(sp,ep)
+      function interpolatePoints(sp, ep)
       {
         //var returnObj = new Object;
         var points = [];
@@ -198,18 +195,40 @@ $('#document').ready(function()
       function blendColor(ori,current,canvas)
       {
         var oriWeight = 0.01;
-        var currentWeight = 0.94;
-        var canvasWeight = 0.05;
+        var currentWeight = 0.9;
+        var canvasWeight = 0.09;
 
         var cf = new Array(4);
         //var alphaTotal = weight*(c1[3]+c2[3]);
+        /*
         for(var i=0;i<4;i++)
         {
           cf[i] = ori[i]*oriWeight;
           cf[i] += current[i]*currentWeight;
           cf[i] += canvas[i]*canvasWeight;
           //cf[i]/=alphaTotal;
+        }*/
+        
+        for(var i=0;i<3;i++)
+        {
+          //255 - SQRT(((255-Color1.R)^2 + (255-Color2.R)^2)/2)
+         
+          
+          
+            var op2 = (1-ori[i]/ori[3]);
+            var cp2 = (1-canvas[i]/canvas[3]);
+            var up2 = (1-current[i]/current[3]);
+            if(canvas[3]==0)
+            {
+              cp2 = 0;
+              oriWeight = 0.1;
+            }
+            cf[i] = 1-Math.sqrt((op2*op2*oriWeight+cp2*cp2*canvasWeight+up2*up2*currentWeight));
+            //cf[i] = ori[i]/ori[3]*canvas[i]/canvas[3];
+          
         }
+        cf[3] = 1;
+
         return cf;
       }
       function drawBG()
@@ -221,6 +240,7 @@ $('#document').ready(function()
           bgTexture.unbind(0);
       }
       var x = 0;
+      var y = 0;
       
       gl.ondraw = function() {
         x+=0.1;
@@ -241,15 +261,18 @@ $('#document').ready(function()
         x = e.offsetX;
         y = height-e.offsetY;
         lastPos = new GL.Vector(x,y);
+        lastPoint = new PaintPoint(lastPos,0,null);
        currentColor = palatteColor;
+       //draw single dot
+
       });
       $(window).bind('mouseup',function(e){
         isMouseDown = false;
-        lastPos = null;
+        lastPoint = null;
          dir = null;
          currentColor = null;
-         console.log("up");
       });
+      var lastPoint;
       $(window).bind('mousemove', mousemove);
       function mousemove(e){
         if(!isMouseDown)
@@ -259,20 +282,15 @@ $('#document').ready(function()
         var plugin = document.getElementById('wtPlugin');
         if(plugin.penAPI!=undefined)
         {
-          console.log(plugin.penAPI);
           force = plugin.penAPI.pressure;
-          if(force==0)
-            force = 1;
         }
         else
           force = 1;
         
           
-        var o2, x, y;
+        var x, y;
         x = e.offsetX;
         y = height-e.offsetY;
-        var w = width;
-        var h = height;
         var pos = new GL.Vector(x,y);
       
         var canvasColor = readPixel(x,y);
@@ -287,20 +305,24 @@ $('#document').ready(function()
           currentColor = blendColor(palatteColor,currentColor,canvasColor,0.5);
           //console.log(color);
         }
-         
-        
-        if(lastPos!=null)
+        if(lastPoint!=null)
         {
           var newDir = pos.subtract(lastPos);
-          if(dir!=null)
-            dir = newDir.add(dir).divide(2);
-          else
+          
             dir = newDir;
-         // console.log(dir);
-         console.log(dir);
-          drawStroke(pos);
+         
+          //drawStroke(pos);
+          var point = new PaintPoint(pos,currentColor,force,dir);
+          //var lastPoint = new PaintPoint(lastPos,force,dir);
+          if(strokeRenderer.drawStroke(lastPoint,point))
+          {
+            renderScene();
+            lastPos = pos;
+            lastPoint = point;
+          }
         }
       }
+      
         /*
         var glcanvas;
         $('#document').ready(function()

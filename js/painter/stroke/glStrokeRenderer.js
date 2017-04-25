@@ -1,62 +1,80 @@
+/// <reference path="PaintPoint.js" />
+var GLStrokeRenderer = function(brushTexture,canvasTexture,mvp,shader){
+    //MVP Matrix
+    this.mvp = mvp;
+    this.vertexShader = shader;
 
-function GLStrokeRenderer(){
-    this.brushTexture;
-    this.canvasTexture;
-    this.uniforms = [];
-    this.vertexBuffers = [];
-}
-GLStrokeRenderer.prototype={
-    setBrushTexture: function (t)
+    //brush texture:Texture
+    this.brushTexture = brushTexture;
+    this.canvasTexture = canvasTexture;
+    this.uniforms = new Object();
+    this.vertexBuffers = new Object();
+    
+    
+    this.bindUniform = function (uniformName,uniformValue)
     {
-        brushTexture = t;
-    },
-    setCanvasTexture: function(t)
+        this.uniforms[uniformName] = uniformValue;
+    };
+    this.bindTextures = function()
     {
-        canvasTexture = t;
-    },
-
-    drawStroke: function(pos)
-    {
-        renderTexture.drawTo(function() {
-            gl.enable(gl.BLEND);
-            gl.blendEquation(gl.FUNC_ADD);
-            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-            gl.loadIdentity();
-            gl.translate(0, 0, -1);
-        });
-    },
-    bindAttribute:function (attributeName,attributeValue)
+        this.brushTexture.bind(0);
+        this.canvasTexture.bind(1);
+    };
+    this.bindAttribute = function (attributeName,attributeValue)
     {
         var vertices = new GL.Buffer(gl.ARRAY_BUFFER, Float32Array);
         vertices.data = vertices.data.concat(attributeValue);
         vertices.compile();
-        vertexBuffers[attributeName] = vertices;
-    },
-    bindUniform:function (uniformName,uniformValue)
+        this.vertexBuffers[attributeName] = vertices;
+    };
+    this.bindStrokeShader =function (pointData)
     {
-        uniforms[uniformName] = uniformValue;
-    },
-    bindTextures:function()
-    {
-        brushTexture.bind(0);
-        canvasTexture.bind(1);
-    },
-    bindStrokeShader:function (pointData)
-    {
-        uniforms = new Object;
-        vertexBuffers = new Object;
-        bindTextures();
+        this.uniforms = new Object;
+        this.vertexBuffers = new Object;
+        this.bindTextures();
+        this.bindUniform('texture',0);
+        this.bindUniform('mvp',this.mvp);
+        
+        this.bindAttribute('vertexPosition',pointData.positions);
+        this.bindAttribute('velocity',pointData.velocities);
+        console.log(pointData.velocities);
+        this.bindAttribute('force',pointData.forces);
+        this.bindAttribute('color',pointData.colors);
 
-        bindUniform('texture',0);
-        bindUniform('mvp',mvp);
-        bindUniform('color',currentColor);
-        //TODO--should interpolate as attribute
-        bindUniform('velocity',[dir.x,dir.y]);
-
-        bindAttribute('vertexPosition',pointData.positions);
-        bindAttribute('force',pointData.force);
-
-        vertexShader.drawBuffers(vertexBuffers, null, gl.POINTS);
-        vertexShader.uniforms(uniforms);
-    }
+        this.vertexShader.drawBuffers(this.vertexBuffers, null, gl.POINTS);
+        this.vertexShader.uniforms(this.uniforms);
+    };
+}
+GLStrokeRenderer.prototype.setBrushTexture = function (t)
+{
+    this.brushTexture = t;
 };
+GLStrokeRenderer.prototype.setCanvasTexture = function(t)
+{
+    this.canvasTexture = t;
+};
+
+GLStrokeRenderer.prototype.drawStroke = function(lastPoint,point)
+{
+    var renderer = this;
+    var pointData = PaintPoint.interpolate(lastPoint,point);
+    if(pointData==null)
+    {
+        return false;
+    }
+    this.canvasTexture.drawTo(function() {
+        gl.enable(gl.BLEND);
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.loadIdentity();
+        gl.translate(0, 0, -1);
+        renderer.bindStrokeShader(pointData);
+    });
+    this.brushTexture.unbind(0);
+    return true;
+};
+
+
+
+
+

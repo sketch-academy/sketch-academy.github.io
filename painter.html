@@ -9,18 +9,18 @@
       <input id="color-picker" type="color" name="" value="#FF0000">
     </body>
 <!--shader-->
-    <script src="ligthgl.js"></script>
+
+      <script src="js/painter/lightgl.js"></script>
       <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
       <script id="vertex-brush" type="x-shader/x-vertex">
        #define M_PI 3.141592
         #define M_PI_2 1.570796
         attribute vec4 vertexPosition;
-        //attribute vec4 force;
-        uniform float force;
-        uniform vec2 velocity;
+        attribute float force;
+        attribute vec4 color;
+        attribute vec2 velocity;
         uniform mat4 mvp;
-        
-       
+        varying vec4 fragmentColor;
         varying float angle;
         void main()
         {
@@ -28,6 +28,7 @@
             angle = atan(velocity.x,velocity.y)+M_PI_2;
             gl_Position = mvp * vertexPosition;
             gl_PointSize = force* 20.0;//brushSize*float(4)*(1.0+tiltValue/2.0);
+            fragmentColor = color*0.1;
         }
       </script>
 
@@ -36,14 +37,14 @@
         #define M_PI_2 1.570796
         uniform sampler2D canvas;
         uniform sampler2D texture;
-        uniform vec4 color;
+        varying vec4 fragmentColor;
         varying float angle;
         void main()
         {
           float vRotation = angle;
           float mid = 0.5;
           vec2 rotated = vec2(cos(vRotation) * (gl_PointCoord.x - mid) + sin(vRotation) * (gl_PointCoord.y - mid) + mid,cos(vRotation) * (gl_PointCoord.y - mid) - sin(vRotation) * (gl_PointCoord.x - mid) + mid);
-          gl_FragColor = color *0.5* texture2D(texture,rotated);// - destColor;
+          gl_FragColor = fragmentColor * texture2D(texture,rotated);// - destColor;
         }
       </script>
 
@@ -66,6 +67,8 @@
     gl_FragColor = texture2D(texture, coord)*vec4(1,1,1,1);
     }
     </script>
-    <script src="js/painter/stroke/glStrokeRenderer.js"></script>
+    <script src="js/painter/stroke/PaintPoint.js"></script>
+    <script src="js/painter/stroke/PointInterpolater.js"></script>
+    <script src="js/painter/stroke/GLStrokeRenderer.js"></script>
      <script src="js/painter/painter.js"></script>
 </html>
