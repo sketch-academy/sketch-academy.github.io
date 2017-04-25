@@ -1,5 +1,5 @@
 /// <reference path="lightgl.js" />
-/// <reference path="stroke/GLStrokeRenderer.js" />
+/// <reference path="render/GLStrokeRenderer.js" />
 var gl = GL.create({preserveDrawingBuffer: true,premultipledAlpha:true});
 $('#document').ready(function(){
       // document.body.style.zoom="100%";
@@ -256,6 +256,8 @@ $('#document').ready(function(){
       var dir;
 
       var isMouseDown = false;
+      var isPen = false;
+      var plugin = document.getElementById('wtPlugin');
       $(window).bind('mousedown',function(e){
         isMouseDown = true;
         x = e.offsetX;
@@ -263,6 +265,15 @@ $('#document').ready(function(){
         lastPos = new GL.Vector(x,y);
         lastPoint = new PaintPoint(lastPos,0,null);
        currentColor = palatteColor;
+       if(plugin.penAPI!=undefined)
+        {
+          var api = plugin.penAPI;
+            force = api.pressure;
+          if(force==0)
+            isPen = false
+          else
+            isPen = true;
+        }
        //draw single dot
 
       });
@@ -279,11 +290,18 @@ $('#document').ready(function(){
           return;
         
            
-        var plugin = document.getElementById('wtPlugin');
-        if(plugin.penAPI!=undefined)
+        
+      
+        if(isPen)
         {
-          force = plugin.penAPI.pressure;
+          if(plugin.penAPI!=undefined)
+          {
+              var api = plugin.penAPI;
+              force = api.pressure;
+            
+          }
         }
+        
         else
           force = 1;
         

@@ -1,4 +1,4 @@
-/// <reference path="PaintPoint.js" />
+/// <reference path="../stroke/PaintPoint.js" />
 var GLStrokeRenderer = function(brushTexture,canvasTexture,mvp,shader){
     //MVP Matrix
     this.mvp = mvp;
@@ -37,7 +37,7 @@ var GLStrokeRenderer = function(brushTexture,canvasTexture,mvp,shader){
         
         this.bindAttribute('vertexPosition',pointData.positions);
         this.bindAttribute('velocity',pointData.velocities);
-        console.log(pointData.velocities);
+        //console.log(pointData.velocities);
         this.bindAttribute('force',pointData.forces);
         this.bindAttribute('color',pointData.colors);
 
