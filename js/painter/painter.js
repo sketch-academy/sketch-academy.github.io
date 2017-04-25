@@ -50,6 +50,7 @@ $('#document').ready(function(){
       var height = gl.canvas.height;
       var mesh = GL.Mesh.plane({ coords: true });
       var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
+      var renderMVP = GL.Matrix.identity();
 
       mesh.verteices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
       var renderTexture = new GL.Texture(width, height);
@@ -111,9 +112,9 @@ $('#document').ready(function(){
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
           gl.loadIdentity();
-          gl.translate(disx,disy, 0);//移到pivot
-          gl.scale(canvasScale,canvasScale,canvasScale);//scale, 放大pivot的移動
-          gl.translate(-disx,-disy,0);//修正
+          //gl.translate(disx,disy, 0);//移到pivot
+          //gl.scale(canvasScale,canvasScale,canvasScale);//scale, 放大pivot的移動
+          //gl.translate(-disx,-disy,0);//修正
           
           drawBG();
           drawRenderTexture();
@@ -125,7 +126,7 @@ $('#document').ready(function(){
         
           renderTexture.bind(0);
           shader.uniforms({
-            'renderTexture':0,'mvp':mvp
+            'renderTexture':0,'mvp':renderMVP
           }).draw(mesh);
           renderTexture.unbind(0);
       }
@@ -210,7 +211,7 @@ $('#document').ready(function(){
       {
           bgTexture.bind(0);
           shader.uniforms({
-              'renderTexture': 0,'mvp':mvp
+              'renderTexture': 0,'mvp':renderMVP
           }).draw(mesh);
           bgTexture.unbind(0);
       }
