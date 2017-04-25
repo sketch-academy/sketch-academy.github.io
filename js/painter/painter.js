@@ -110,8 +110,8 @@ $('#document').ready(function(){
           gl.enable(gl.BLEND);
           gl.blendEquation(gl.FUNC_ADD);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
-          gl.loadIdentity();
+          renderMVP = GL.Matrix.identity();
+          GL.Matrix.scale(canvasScale,canvasScale,canvasScale,renderMVP);
           //gl.translate(disx,disy, 0);//移到pivot
           //gl.scale(canvasScale,canvasScale,canvasScale);//scale, 放大pivot的移動
           //gl.translate(-disx,-disy,0);//修正
