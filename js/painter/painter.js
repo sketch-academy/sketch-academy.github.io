@@ -103,6 +103,7 @@ $('#document').ready(function(){
       var canvasScale = 1;
       var disx=0,disy = 0;
       var pivotx = 0,pivoty = 0;
+      var newScale = 1;
       var renderScene = function()
       {
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -110,8 +111,31 @@ $('#document').ready(function(){
           gl.enable(gl.BLEND);
           gl.blendEquation(gl.FUNC_ADD);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+          
+          
+          var divideScale = newScale/canvasScale;
+          var divideScale = newScale;
+          //console.log(divideScale);
+          var transMatrix = GL.Matrix.translate(canvasPos.x,canvasPos.y,0);
+          var awayMatrix = GL.Matrix.translate(disx,disy,0);
+          var scaleMatrix = GL.Matrix.scale(divideScale,divideScale,0);
+          var backMatrix = GL.Matrix.translate(-disx,-disy,0);
+
+          
+
           renderMVP = GL.Matrix.identity();
-          GL.Matrix.scale(canvasScale,canvasScale,canvasScale,renderMVP);
+          
+          renderMVP = GL.Matrix.multiply(renderMVP,awayMatrix);
+          renderMVP = GL.Matrix.multiply(renderMVP,scaleMatrix);
+          renderMVP = GL.Matrix.multiply(renderMVP,backMatrix);
+          //renderMVP = GL.Matrix.multiply(renderMVP,transMatrix);
+          
+          
+          canvasPos = renderMVP.transformPoint(canvasPos);
+          
+      
+          
+          canvasScale = newScale;
           //gl.translate(disx,disy, 0);//移到pivot
           //gl.scale(canvasScale,canvasScale,canvasScale);//scale, 放大pivot的移動
           //gl.translate(-disx,-disy,0);//修正
@@ -256,44 +280,34 @@ $('#document').ready(function(){
       });
       
       var lastPoint;
-      var scroll = 100;
+      var scroll = 20;
       var canZoom = true;
       var lastPivotX = 0;
       var lastPivotY = 0;
       var oldCanvasPosX = 0;
       var oldCanvasPosY = 0;
-      var canvasPosX = 0;
-      var canvasPosY = 0;
+      var canvasPos = new GL.Vector(0,0,0);
+      
       $(gl.canvas).mousewheel(function(e)
       {
-        pivotx = e.offsetX*2/width-1;
-        pivoty = -(e.offsetY*2/height-1);
-        if(lastPivotX!=pivotx)
-        {
-          lastPivotX = pivotx;
-          lastPivotY = pivoty;
-        }
-        
-        canvasPosX = -(pivotx-oldCanvasPosX)*canvasScale+(pivotx-oldCanvasPosX);
-        canvasPosY = -(pivoty-oldCanvasPosY)*canvasScale+(pivoty-oldCanvasPosY);
-        oldCanvasPosX = canvasPosX;
-        oldCanvasPosY = canvasPosY;
-
-        
-
-        //disx = pivotx-canvasPosX;
-        //disy = pivoty-canvasPosY;
-        
 
         scroll-=e.deltaY;
-        if(scroll<10)
-          scroll = 10;
+        if(scroll<1)
+          scroll = 1;
         //console.log(e.clientX);
-        console.log(canvasPosX);
-        console.log(canvasPosY);
-        if(scroll>=10)
+        if(scroll>1)
         { 
-          canvasScale = scroll/100;
+          newScale = scroll/20;
+          console.log(canvasPos);
+          pivotx = e.offsetX*2/width-1;
+          pivoty = -(e.offsetY*2/height-1);
+          pivotx = 1;
+          pivoty = 1;
+          
+          disx = (pivotx-canvasPos.x);
+          disy = (pivoty-canvasPos.y);
+          
+          console.log(newScale);
           //disx = (pivotx/width-0.5)*2;
           //disy = -(pivoty/height-0.5)*2;
 
