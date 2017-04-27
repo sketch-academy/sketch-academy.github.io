@@ -33,7 +33,7 @@ var GLStrokeRenderer = function(brushTexture,canvasTexture,mvp,shader){
         this.vertexBuffers = new Object;
         this.bindTextures();
         this.bindUniform('texture',0);
-        this.bindUniform('mvp',this.mvp);
+        this.bindUniform('mvp',this.mvp.m);
         
         this.bindAttribute('vertexPosition',pointData.positions);
         this.bindAttribute('velocity',pointData.velocities);

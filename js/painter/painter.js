@@ -49,7 +49,7 @@ $('#document').ready(function(){
       var width = gl.canvas.width;
       var height = gl.canvas.height;
       var mesh = GL.Mesh.plane({ coords: true });
-      var mvp = GL.Matrix.ortho(0, width, 0, height, -1,1).m;
+      var pMatrix = GL.Matrix.ortho(0, width, 0, height, -1,1);
       var renderMVP = GL.Matrix.identity();
 
       mesh.verteices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
@@ -66,7 +66,7 @@ $('#document').ready(function(){
       var fragRenderTexture = document.getElementById("fragment-renderTexture");
       var vertexShader = new GL.Shader(vertBrush.text,fragBrush.text);
       var shader = new GL.Shader(vertRenderTexture.text,fragRenderTexture.text);
-      var strokeRenderer = new GLStrokeRenderer(texture,renderTexture,mvp,vertexShader);
+      var strokeRenderer = new GLStrokeRenderer(texture,renderTexture,pMatrix,vertexShader);
 
       //var mvp = GL.Matrix.translate(0,0,-2);
       //changeBrush();
@@ -104,6 +104,28 @@ $('#document').ready(function(){
       var disx=0,disy = 0;
       var pivotx = 0,pivoty = 0;
       var newScale = 1;
+
+      calculateTest();
+      function calculateTest()
+      {
+          pivotx = 2;
+          pivoty = 2;
+          canvasPos = new GL.Vector(1,1);
+          disx = -(canvasPos.x-pivotx);
+          disy = -(canvasPos.y-pivoty);
+
+          var awayMatrix = GL.Matrix.translate(-disx,-disy,0);
+          var scaleMatrix = GL.Matrix.scale(2,2,2);
+          var backMatrix = GL.Matrix.translate(disx,disy,0);
+          //var trans2Matrix = GL.Matrix.translate(-canvasPos.x,-canvasPos.y,0);
+          renderMVP = GL.Matrix.identity();
+          renderMVP = GL.Matrix.multiply(awayMatrix,renderMVP);
+          
+          renderMVP = GL.Matrix.multiply(scaleMatrix,renderMVP);
+          
+          renderMVP = GL.Matrix.multiply(backMatrix,renderMVP); 
+          
+      }
       var renderScene = function()
       {
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -112,28 +134,31 @@ $('#document').ready(function(){
           gl.blendEquation(gl.FUNC_ADD);
           gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
           
-          
           var divideScale = newScale/canvasScale;
-          var divideScale = newScale;
-          //console.log(divideScale);
-          var transMatrix = GL.Matrix.translate(canvasPos.x,canvasPos.y,0);
-          var awayMatrix = GL.Matrix.translate(disx,disy,0);
-          var scaleMatrix = GL.Matrix.scale(divideScale,divideScale,0);
-          var backMatrix = GL.Matrix.translate(-disx,-disy,0);
+         // pivotx = 1;
+          //pivoty = 1;
+          console.log(canvasPos);
+          disx = pivotx;
+          disy = pivoty;
 
+          var awayMatrix = GL.Matrix.translate(-disx,-disy,0);
+          var scaleMatrix = GL.Matrix.scale(divideScale,divideScale,divideScale);
+          var backMatrix = GL.Matrix.translate(disx,disy,0);
+          //var trans2Matrix = GL.Matrix.translate(-canvasPos.x,-canvasPos.y,0);
+          //renderMVP = GL.Matrix.identity();
+          renderMVP = GL.Matrix.multiply(awayMatrix,renderMVP);
+          //console.log(renderMVP.transformPoint(vec));
+          renderMVP = GL.Matrix.multiply(scaleMatrix,renderMVP);
+          //console.log(renderMVP.transformPoint(vec));
+          renderMVP = GL.Matrix.multiply(backMatrix,renderMVP);
+          //console.log(renderMVP.transformPoint(vec));
           
-
-          renderMVP = GL.Matrix.identity();
-          
-          renderMVP = GL.Matrix.multiply(renderMVP,awayMatrix);
-          renderMVP = GL.Matrix.multiply(renderMVP,scaleMatrix);
-          renderMVP = GL.Matrix.multiply(renderMVP,backMatrix);
-          //renderMVP = GL.Matrix.multiply(renderMVP,transMatrix);
+          //var transMatrix = GL.Matrix.translate(canvasPos.x,canvasPos.y,0);
+          //renderMVP = GL.Matrix.multiply(transMatrix,renderMVP);
           
           
-          canvasPos = renderMVP.transformPoint(canvasPos);
+          //console.log(renderMVP.transformPoint(vec));
           
-      
           
           canvasScale = newScale;
           //gl.translate(disx,disy, 0);//移到pivot
@@ -212,9 +237,6 @@ $('#document').ready(function(){
         for(var i=0;i<3;i++)
         {
           //255 - SQRT(((255-Color1.R)^2 + (255-Color2.R)^2)/2)
-         
-          
-          
             var op2 = (1-ori[i]/ori[3]);
             var cp2 = (1-canvas[i]/canvas[3]);
             var up2 = (1-current[i]/current[3]);
@@ -224,8 +246,6 @@ $('#document').ready(function(){
               oriWeight = 0.1;
             }
             cf[i] = 1-Math.sqrt((op2*op2*oriWeight+cp2*cp2*canvasWeight+up2*up2*currentWeight));
-            //cf[i] = ori[i]/ori[3]*canvas[i]/canvas[3];
-          
         }
         cf[3] = 1;
 
@@ -280,42 +300,32 @@ $('#document').ready(function(){
       });
       
       var lastPoint;
-      var scroll = 20;
+      var scroll = 10;
       var canZoom = true;
       var lastPivotX = 0;
       var lastPivotY = 0;
       var oldCanvasPosX = 0;
       var oldCanvasPosY = 0;
       var canvasPos = new GL.Vector(0,0,0);
-      
+      var scaleTable = [0.2,0.333,0.5,1,2,4,5,6,8];
       $(gl.canvas).mousewheel(function(e)
       {
-
         scroll-=e.deltaY;
         if(scroll<1)
           scroll = 1;
         //console.log(e.clientX);
         if(scroll>1)
         { 
-          newScale = scroll/20;
-          console.log(canvasPos);
+          var v = Math.round(scroll/10);
+          if(v<0)
+            v = 0;
+          if(v>=scaleTable.length)
+            v = scaleTable.length-1;
+          newScale = scaleTable[v];
           pivotx = e.offsetX*2/width-1;
           pivoty = -(e.offsetY*2/height-1);
-          pivotx = 1;
-          pivoty = 1;
-          
-          disx = (pivotx-canvasPos.x);
-          disy = (pivoty-canvasPos.y);
           
           console.log(newScale);
-          //disx = (pivotx/width-0.5)*2;
-          //disy = -(pivoty/height-0.5)*2;
-
-          //disx = (e.offsetX/width-0.5);
-          //disy = -(e.offsetY/height-0.5);
-          //disx = canvasScale*(e.offsetX/width-0.5);
-          //disy = -canvasScale*(e.offsetY/height-0.5);
-
           renderScene();
         }
         
@@ -346,8 +356,18 @@ $('#document').ready(function(){
         var x, y;
         x = e.offsetX;
         y = height-e.offsetY;
-        var pos = new GL.Vector((x-width/2*(1+disx))/canvasScale+width/2,(y-height/2*(1+disy))/canvasScale+height/2);
-        //console.log(pos);
+        
+        
+        //var pos = new GL.Vector((x-width/2*(1+disx))/canvasScale+width/2,(y-height/2*(1+disy))/canvasScale+height/2);
+        var pos = new GL.Vector(e.offsetX*2/width-1,-(e.offsetY*2/height-1));
+        pos = renderMVP.inverse().transformPoint(pos);
+        
+        //pos = r.transformPoint(pos);
+        //pos = renderMVP.transformPoint(pos);
+        
+        pos.x = (pos.x+1)*width/2;
+        pos.y = (pos.y+1)*height/2;
+        
       
         var canvasColor = readPixel(x,y);
         //color = palatteColor;
