@@ -8,6 +8,18 @@ $('#document').ready(function(){
         console.log("clicked");
         brushType = "eraser";
       });
+      $('#layer').click(function()
+      {
+        //$(this).find(":selected").text();
+
+        //  取得被選擇項目的值
+        var value = $(this).find(":selected").val();
+        if(value == "+")
+        {
+          layers.push(new GL.Texture(width,height));
+          $(this).append($("<option></option>").attr("value", layers.length-1).text("Layer:"+(layers.length-1)));
+        }
+      });
       $('#brush-btn').click(function()
       {
         brushType = "brush";
@@ -53,7 +65,10 @@ $('#document').ready(function(){
       var renderMVP = GL.Matrix.identity();
 
       mesh.verteices = [[0, 0, 0], [width, 0, 0], [0, height, 0], [width, height, 0]];
-      var renderTexture = new GL.Texture(width, height);
+      var layers = new Array();
+      layers.push(new GL.Texture(width, height));
+      var currentLayer = layers[0];
+
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       var texture = GL.Texture.fromURL('img/brush/flat.png',{format:gl.RGBA});
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
@@ -66,7 +81,7 @@ $('#document').ready(function(){
       var fragRenderTexture = document.getElementById("fragment-renderTexture");
       var vertexShader = new GL.Shader(vertBrush.text,fragBrush.text);
       var shader = new GL.Shader(vertRenderTexture.text,fragRenderTexture.text);
-      var strokeRenderer = new GLStrokeRenderer(texture,renderTexture,pMatrix,vertexShader);
+      var strokeRenderer = new GLStrokeRenderer(texture,currentLayer,pMatrix,vertexShader);
 
       //var mvp = GL.Matrix.translate(0,0,-2);
       //changeBrush();
@@ -79,9 +94,9 @@ $('#document').ready(function(){
         this.velocity = 0;
       }*/
 
-      var angle;
+      //var angle;
       gl.onupdate = function(seconds) {
-        angle += 45 * seconds;
+        
       };
 
       //gl.scale(2,2,2);
@@ -94,7 +109,7 @@ $('#document').ready(function(){
       
       var clearCanvas = function()
       {
-          renderTexture.drawTo(function() {
+          currentLayer.drawTo(function() {
               gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
               gl.clearColor(1,1,1,1);
           });
@@ -105,7 +120,7 @@ $('#document').ready(function(){
       var pivotx = 0,pivoty = 0;
       var newScale = 1;
 
-      calculateTest();
+      //calculateTest();
       function calculateTest()
       {
           pivotx = 2;
@@ -141,6 +156,25 @@ $('#document').ready(function(){
           disx = pivotx;
           disy = pivoty;
 
+          var pos = renderMVP.inverse().transformPoint(new GL.Vector(pivotx,pivoty));
+        
+          if(pos.x > 1)
+          {
+            disx = 0.8;
+          }
+          else if(pos.x<-1)
+          {
+            disx = -0.8;
+          }
+          if(pos.y>1)
+          {
+            disy = 0.8;
+          }
+          else if(pos.y<-1)
+          {
+            disy = -0.8;
+          }
+
           var awayMatrix = GL.Matrix.translate(-disx,-disy,0);
           var scaleMatrix = GL.Matrix.scale(divideScale,divideScale,divideScale);
           var backMatrix = GL.Matrix.translate(disx,disy,0);
@@ -166,26 +200,37 @@ $('#document').ready(function(){
           //gl.translate(-disx,-disy,0);//修正
           
           drawBG();
-          drawRenderTexture();
+          for(var i = 0 ;i<layers.length;i++)
+          {
+            drawRenderTexture(layers[i]);
+          }
+          
           //drawTest();
       }
-
+      function drawRenderTexture(texture)
+      {
+          texture.bind(0);
+          shader.uniforms({
+            'renderTexture':0,'mvp':renderMVP
+          }).draw(mesh);
+          texture.unbind(0);
+      }
+      /*
       var drawRenderTexture = function()
       {
-        
           renderTexture.bind(0);
           shader.uniforms({
             'renderTexture':0,'mvp':renderMVP
           }).draw(mesh);
           renderTexture.unbind(0);
-      }
+      }*/
       function readPixel(x,y)
       {
-          renderTexture.bind(0);
-          renderTexture.canDrawTo();
+          currentLayer.bind(0);
+          currentLayer.canDrawTo();
           var framebuffer = gl.createFramebuffer();
           gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, renderTexture.id, 0);
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, currentLayer.id, 0);
           var pixels = new Uint8Array(4);
           gl.readPixels(x, y, 1,1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
           var f = new Float32Array(4);
@@ -193,7 +238,7 @@ $('#document').ready(function(){
           {
             f[i] = pixels[i]/255;
           }
-          renderTexture.unbind(0);
+          currentLayer.unbind(0);
           //console.log(pixels); // Uint8Array
           //pixels/=255;
           return f;
@@ -300,7 +345,7 @@ $('#document').ready(function(){
       });
       
       var lastPoint;
-      var scroll = 10;
+      var scroll = 3;
       var canZoom = true;
       var lastPivotX = 0;
       var lastPivotY = 0;
@@ -308,26 +353,36 @@ $('#document').ready(function(){
       var oldCanvasPosY = 0;
       var canvasPos = new GL.Vector(0,0,0);
       var scaleTable = [0.2,0.333,0.5,1,2,4,5,6,8];
+      var macScroll = 0;
       $(gl.canvas).mousewheel(function(e)
       {
-        scroll-=e.deltaY;
-        if(scroll<1)
-          scroll = 1;
+        if(isMouseDown)
+        return;
+
+        if (e.ctrlKey) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          macScroll-=e.deltaY;
+          scroll = macScroll/10;
+        }
+        else
+        {
+                  scroll-=e.deltaY;
+        }
+        if(scroll<=0)
+          scroll = 0;
         //console.log(e.clientX);
-        if(scroll>1)
-        { 
-          var v = Math.round(scroll/10);
-          if(v<0)
-            v = 0;
-          if(v>=scaleTable.length)
-            v = scaleTable.length-1;
-          newScale = scaleTable[v];
+          
+          if(scroll>=scaleTable.length)
+            scroll = scaleTable.length-1;
+          newScale = scaleTable[scroll];
           pivotx = e.offsetX*2/width-1;
           pivoty = -(e.offsetY*2/height-1);
           
+          
           console.log(newScale);
           renderScene();
-        }
+        
         
       });
       $(gl.canvas).bind('mouseup',function(e){
