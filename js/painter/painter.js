@@ -58,8 +58,8 @@ $('#document').ready(function(){
           palatteColor = [r/255,g/255,b/255,1];
       });
       
-      var width = gl.canvas.width;
-      var height = gl.canvas.height;
+      var width = gl.canvas.width = 1280;
+      var height = gl.canvas.height = 800;
       var mesh = GL.Mesh.plane({ coords: true });
       var pMatrix = GL.Matrix.ortho(0, width, 0, height, -1,1);
       var renderMVP = GL.Matrix.identity();
@@ -71,6 +71,7 @@ $('#document').ready(function(){
 
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       var texture = GL.Texture.fromURL('img/brush/flat.png',{format:gl.RGBA});
+      var practiceTexture = GL.Texture.fromURL('img/practice/boldhead.jpg',{format:gl.RGBA});
       var bgTexture = GL.Texture.fromURL('paper_sketch.png');
       
       
@@ -298,11 +299,13 @@ $('#document').ready(function(){
       }
       function drawBG()
       {
-          bgTexture.bind(0);
+          //bgTexture.bind(0);
+          practiceTexture.bind(0);
           shader.uniforms({
               'renderTexture': 0,'mvp':renderMVP
           }).draw(mesh);
-          bgTexture.unbind(0);
+          practiceTexture.bind(0);
+          //bgTexture.unbind(0);
       }
       var x = 0;
       var y = 0;
